@@ -291,8 +291,25 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 	app->db->setInt(7,  this->pcProfile->charId);
 	app->db->execute();
 
-
-
+	CNtlPacket packet(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
+    sGU_AVATAR_ATTRIBUTE_UPDATE * res = (sGU_AVATAR_ATTRIBUTE_UPDATE *)packet.GetPacketData();
+	res->abyFlexibleField[34] = this->pcProfile->avatarAttribute.wLastPhysicalOffence;
+	res->abyFlexibleField[36] = this->pcProfile->avatarAttribute.wLastPhysicalDefence;
+	res->abyFlexibleField[38] = this->pcProfile->avatarAttribute.wLastEnergyOffence;
+	res->abyFlexibleField[40] = this->pcProfile->avatarAttribute.wLastEnergyDefence;
+	res->abyFlexibleField[57] = this->pcProfile->avatarAttribute.wLastAttackSpeedRate;
+	res->abyFlexibleField[59] = this->pcProfile->avatarAttribute.fLastAttackRange;
+	res->abyFlexibleField[3] = this->pcProfile->avatarAttribute.byLastCon;
+	res->abyFlexibleField[7] = this->pcProfile->avatarAttribute.byLastDex;
+	res->abyFlexibleField[11] = this->pcProfile->avatarAttribute.byLastEng;
+	res->abyFlexibleField[5] = this->pcProfile->avatarAttribute.byLastFoc;
+	res->abyFlexibleField[9] = this->pcProfile->avatarAttribute.byLastSol;
+	res->abyFlexibleField[1] = this->pcProfile->avatarAttribute.byLastStr;
+	res->byAttributeTotalCount = ((UCHAR_MAX - 1) / 8 + 1) + sizeof(sAVATAR_ATTRIBUTE);
+	res->hHandle = this->avatarHandle;
+	res->wOpCode = GU_AVATAR_ATTRIBUTE_UPDATE;
+	packet.SetPacketLen(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
+	g_pApp->Send( this->MySession , &packet );
 	app->db->prepare("SELECT * FROM characters WHERE CharID = ?");
 	app->db->setInt(1, this->pcProfile->charId);
 	app->db->execute();

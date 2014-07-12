@@ -2216,25 +2216,45 @@ void CClientSession::SendItemMoveReq(CNtlPacket * pPacket, CGameServer * app)
 	app->db->execute();
 	app->db->fetch();
 	RwUInt32 uniqueID = app->db->getInt("id");
-
-	if(app->qry->CheckIfCanMoveItemThere(this->plr->pcProfile->charId, req->byDestPlace, req->byDestPos) == false){
+	RwUInt32 ID = app->db->getInt("tblidx");
+	
+	
+	if((app->qry->CheckIfCanMoveItemThere(this->plr->pcProfile->charId, req->byDestPlace, req->byDestPos) == false))
+	{
 		res->wResultCode = GAME_MOVE_CANT_GO_THERE;
-	} else {
-		app->qry->UpdateItemPlaceAndPos(uniqueID, req->byDestPlace, req->byDestPos);
-		res->wResultCode = GAME_SUCCESS;
+	} 
+	else 
+	{
+		if (req->byDestPlace == 7)
+		{
+			CItemTable *itemTbl = app->g_pTableContainer->GetItemTable();
+			sITEM_TBLDAT* pItemData = (sITEM_TBLDAT*) itemTbl->FindData(ID);
+			if (this->plr->pcProfile->byLevel >= pItemData->byNeed_Level)
+			{
+				res->wResultCode = GAME_SUCCESS;
+				app->qry->UpdateItemPlaceAndPos(uniqueID, req->byDestPlace, req->byDestPos);
+			}
+			else
+			{
+				res->wResultCode = GAME_MOVE_CANT_GO_THERE;
+			}
+		}
+		else
+		{
+			app->qry->UpdateItemPlaceAndPos(uniqueID, req->byDestPlace, req->byDestPos);
+			res->wResultCode = GAME_SUCCESS;
+		}
 	}
-
-		res->wOpCode = GU_ITEM_MOVE_RES;
-		res->hSrcItem = uniqueID;
-		res->bySrcPlace = req->bySrcPlace;
-		res->bySrcPos = req->bySrcPos;
-		res->hDestItem = -1;
-		res->byDestPlace = req->byDestPlace;
-		res->byDestPos = req->byDestPos;
-
-		packet.SetPacketLen(sizeof(sGU_ITEM_MOVE_RES));
-		g_pApp->Send( this->GetHandle() , &packet );
-		this->plr->calculeMyStat(app);
+	res->wOpCode = GU_ITEM_MOVE_RES;
+	res->hSrcItem = uniqueID;
+	res->bySrcPlace = req->bySrcPlace;
+	res->bySrcPos = req->bySrcPos;
+	res->hDestItem = -1;
+	res->byDestPlace = req->byDestPlace;
+	res->byDestPos = req->byDestPos;
+	packet.SetPacketLen(sizeof(sGU_ITEM_MOVE_RES));
+	g_pApp->Send( this->GetHandle() , &packet );
+	this->plr->calculeMyStat(app);
 }
 
 //--------------------------------------------------------------------------------------//
@@ -2403,7 +2423,6 @@ void CClientSession::SendShopBuyReq(CNtlPacket * pPacket, CGameServer * app)
 						j = req->sBuyData[j].byItemPos;
 					for(int l = 12; l >= 0; l--)
 					{
-						//sGU_TRADE_ZENNY_UPDATE_NFY;
 						if(req->sBuyData[l].byItemPos == j)
 						{
 							sITEM_TBLDAT* pItemData = (sITEM_TBLDAT*) itemTbl->FindData( pMerchantData->aitem_Tblidx[j] );
@@ -2486,6 +2505,8 @@ void	CClientSession::SendShopSellReq(CNtlPacket * pPacket, CGameServer * app)
 	sGU_SHOP_SELL_RES * res = (sGU_SHOP_SELL_RES *)packet.GetPacketData();
 	CNtlPacket packet1(sizeof(sGU_ITEM_DELETE));
 	sGU_ITEM_DELETE * res1 = (sGU_ITEM_DELETE *)packet1.GetPacketData();
+	CNtlPacket packet2(sizeof(sGU_UPDATE_CHAR_ZENNY));
+	sGU_UPDATE_CHAR_ZENNY * res2 = (sGU_UPDATE_CHAR_ZENNY *)packet2.GetPacketData();
 
 	CItemTable *itemTbl = app->g_pTableContainer->GetItemTable();
 	int zenit_amount = 0;
@@ -2505,7 +2526,6 @@ void	CClientSession::SendShopSellReq(CNtlPacket * pPacket, CGameServer * app)
 		res1->hSrcItem = id;
 		res1->wOpCode = GU_ITEM_DELETE;
 		packet1.SetPacketLen(sizeof(sGU_ITEM_DELETE));
-
 		sITEM_TBLDAT* pItemData = (sITEM_TBLDAT*) itemTbl->FindData( item_id );
 		zenit_amount += pItemData->bySell_Price * req->sSellData[i].byStack;
 		int count_less = req->sSellData[i].byStack - app->db->getInt("count");
@@ -2524,23 +2544,21 @@ void	CClientSession::SendShopSellReq(CNtlPacket * pPacket, CGameServer * app)
 			app->db->execute();
 		}
 	}
-	app->db->prepare("select * from characters WHERE CharID=?");
-	app->db->setInt(1, this->plr->pcProfile->charId);
-	app->db->execute();
-	app->db->fetch();
-	int zeni_plr = app->db->getInt("money");
-
-	app->db->prepare("UPDATE characters SET money=? WHERE CharID=?");
-	app->db->setInt(1, zeni_plr + zenit_amount);
-	app->db->setInt(2, this->plr->pcProfile->charId);
-	app->db->execute();
-
+	this->plr->pcProfile->dwZenny += zenit_amount;
 	res->handle = req->handle;
 	res->wOpCode = GU_SHOP_SELL_RES;
 	res->wResultCode = GAME_SUCCESS;
+	res2->bIsNew = true;
+	res2->byChangeType = 1;
+	res2->dwZenny = this->plr->pcProfile->dwZenny;
+	res2->handle = this->GetavatarHandle();
+	res2->wOpCode = GU_UPDATE_CHAR_ZENNY;
+	app->qry->SetPlusMoney(this->plr->pcProfile->charId, zenit_amount);
 	packet.SetPacketLen(sizeof(sGU_SHOP_SELL_RES));
+	packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_ZENNY));
 	g_pApp->Send( this->GetHandle() , &packet );
 	g_pApp->Send( this->GetHandle() , &packet1 );
+	g_pApp->Send( this->GetHandle() , &packet2 );
 }
 //ROLL DICE
 void	CClientSession::SendRollDice(CNtlPacket * pPacket, CGameServer * app)
