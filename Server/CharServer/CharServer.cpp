@@ -116,35 +116,32 @@ int CharServerMain(int argc, _TCHAR* argv[])
 {
 	CNtlFileStream traceFileStream;
 	CCharServer app;
-
-// CONNECT  MYSQL
-	app.db = new MySQLConnWrapper;
-	app.db->connect();
-	app.db->switchDb("dbo");
-	app.db2 = new MySQLConnWrapper;
-	app.db2->connect();
-	app.db2->switchDb("dbo");
-
 // LOG FILE
-	
 	int rc = traceFileStream.Create( "charlog" );
 	if( NTL_SUCCESS != rc )
 	{
 		NTL_PRINT(PRINT_APP, "log file CreateFile error %d(%s)", rc, NtlGetErrorMessage( rc ) );
 		return rc;
 	}
-
 // CHECK INT FILE
 	NtlSetPrintStream( traceFileStream.GetFilePtr() );
 	NtlSetPrintFlag( PRINT_APP | PRINT_SYSTEM );
-
-
 	rc = app.Create(argc, argv, ".\\Server.ini");
 	if( NTL_SUCCESS != rc )
 	{
 		NTL_PRINT(PRINT_APP, "Server Application Create Fail %d(%s)", rc, NtlGetErrorMessage(rc) );
 		return rc;
 	}
+
+	// CONNECT TO MYSQL
+	app.db = new MySQLConnWrapper;
+	app.db->setConfig(app.GetConfigFileHost(), app.GetConfigFileUser(), app.GetConfigFilePassword(), app.GetConfigFileDatabase());
+	app.db->connect();
+	app.db->switchDb(app.GetConfigFileDatabase());
+	app.db2 = new MySQLConnWrapper;
+	app.db2->setConfig(app.GetConfigFileHost(), app.GetConfigFileUser(), app.GetConfigFilePassword(), app.GetConfigFileDatabase());
+	app.db2->connect();
+	app.db2->switchDb(app.GetConfigFileDatabase());
 
 	app.Start();
 	Sleep(500);

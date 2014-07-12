@@ -285,23 +285,21 @@ int ChatServerMain(int argc, _TCHAR* argv[])
 		printf( "log file CreateFile error %d(%s)", rc, NtlGetErrorMessage( rc ) );
 		return rc;
 	}
-
-// CONNECT TO MYSQL
-	app.db = new MySQLConnWrapper;
-	app.db->connect();
-	app.db->switchDb("dbo");
-
-
 // CHECK INI FILE AND START PROGRAM
 	NtlSetPrintStream( traceFileStream.GetFilePtr() );
 	NtlSetPrintFlag( PRINT_APP | PRINT_SYSTEM );
-
 	rc = app.Create(argc, argv, ".\\Server.ini");
 	if( NTL_SUCCESS != rc )
 	{
 		NTL_PRINT(PRINT_APP, "Server Application Create Fail %d(%s)", rc, NtlGetErrorMessage(rc) );
 		return rc;
 	}
+
+	// CONNECT TO MYSQL
+	app.db = new MySQLConnWrapper;
+	app.db->setConfig(app.GetConfigFileHost(), app.GetConfigFileUser(), app.GetConfigFilePassword(), app.GetConfigFileDatabase());
+	app.db->connect();
+	app.db->switchDb(app.GetConfigFileDatabase());
 
 	app.Start();
 	Sleep(500);

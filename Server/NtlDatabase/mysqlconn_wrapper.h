@@ -25,13 +25,13 @@ class MySQLConnWrapper
 {
           
     public:
-        
         /* Your MySQL server settings */
         MySQLConnWrapper()
         {
             host     = "tcp://127.0.0.1:3306";
             user     = "root";
-            password = "changeme";
+            password = "";
+			database = "";
         };
         ~MySQLConnWrapper();
         void manageException(sql::SQLException& e);
@@ -45,22 +45,35 @@ class MySQLConnWrapper
 		long double getDouble(const char* index);
 		bool getBoolean(const char* index);
 		int getInt(const char* index);
+		void setConfig(const char* _host, const char* _user, const char* _pass, const char* _db)
+		{
+			host = new char[strlen(_host)];
+			user = new char[strlen(_user)];
+			password = new char[strlen(_pass)];
+			database = new char[strlen(_db)];
+			strcpy(host, _host);
+			strcpy(user, _user);
+			if (strcmp(_pass, "NULL") != 0)
+				strcpy(password, _pass);
+			else
+				password = "";
+			strcpy(database, _db);
+		};
 		string getString(const char* index);
         string print(const string& field);
         string print(const int& index);
 		size_t rowsCount();
 
     private:
-        string host;
-        string user;
-        string password;
-
+        char* host;
+        char* user;
+        char* password;
+		char* database;
         sql::Driver* driver;
         sql::Connection* con;
         sql::Statement* stmt;
         sql::PreparedStatement* prep_stmt;
         sql::ResultSet* res;
-
 };
 
 

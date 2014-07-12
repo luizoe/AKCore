@@ -1603,15 +1603,6 @@ int GameServerMain(int argc, _TCHAR* argv[])
 		return rc;
 	}
 
-
-// CONNECT TO MYSQL
-	app.db = new MySQLConnWrapper;
-	app.db->connect();
-	app.db->switchDb("dbo");
-
-// NEW CLASS
-	app.mob = new MobActivity();
-
 // CHECK INI FILE AND START PROGRAM
 	NtlSetPrintStream( traceFileStreams.GetFilePtr() );
 	NtlSetPrintFlag( PRINT_APP | PRINT_SYSTEM );
@@ -1624,6 +1615,15 @@ int GameServerMain(int argc, _TCHAR* argv[])
 		return rc;
 	}
 
+	// CONNECT TO MYSQL
+	app.db = new MySQLConnWrapper;
+	app.db->setConfig(app.GetConfigFileHost(), app.GetConfigFileUser(), app.GetConfigFilePassword(), app.GetConfigFileDatabase());
+	app.db->connect();
+	app.db->switchDb(app.GetConfigFileDatabase());
+
+	// NEW CLASS
+	app.mob = new MobActivity();
+
 	app.Start();
 	Sleep(500);
 	std::cout << "\n\n" << std::endl;
@@ -1634,7 +1634,7 @@ int GameServerMain(int argc, _TCHAR* argv[])
 	std::cout << "\t |____/|_|  \\__,_|\\__, |\\___/|_| |_|____/ \\__,_|_|_|" << std::endl;
 	std::cout << "\t                  |___/                             " << std::endl;
 	std::cout << "\t______           AKCore :O 2014					______\n\n" << std::endl;
-
+	printf("<Ctrl-C> to stop.\n");
 	app.WaitForTerminate();
 
 	return 0;

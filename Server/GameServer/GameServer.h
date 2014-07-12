@@ -55,6 +55,13 @@ struct sSERVERCONFIG
 {
 	CNtlString		strClientAcceptAddr;
 	WORD			wClientAcceptPort;
+	CNtlString		Host;
+	CNtlString		User;
+	CNtlString		Password;
+	CNtlString		Database;
+	int				PlayerLimit;
+	int				PlayerSaveInterval;
+	int				PlayerSaveStatsSaveOnlyOnLogout;
 };
 
 const DWORD					MAX_NUMOF_GAME_CLIENT = 5;
@@ -339,7 +346,6 @@ class CGameServer : public CNtlServerApp
 {
 
 public:
-
 	int					OnInitApp()
 	{
 		m_nMaxSessionCount = MAX_NUMOF_SESSION;
@@ -349,6 +355,22 @@ public:
 			return NTL_ERR_SYS_MEMORY_ALLOC_FAIL;
 		}
 		return NTL_SUCCESS;
+	}
+	const char*		GetConfigFileHost()
+	{
+		return m_config.Host.c_str();
+	}
+	const char*		GetConfigFileUser()
+	{
+		return m_config.User.c_str();
+	}
+	const char*		GetConfigFilePassword()
+	{
+		return m_config.Password.c_str();
+	}
+	const char*		GetConfigFileDatabase()
+	{
+		return m_config.Database.c_str();
 	}
 	int					OnCreate()
 	{
@@ -388,6 +410,34 @@ public:
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
 		}
+		if( !file.Read("DATABASE", "Host",  m_config.Host) )
+		{
+			return NTL_ERR_DBC_HANDLE_ALREADY_ALLOCATED;
+		}
+		if( !file.Read("DATABASE", "User",  m_config.User) )
+		{
+			return NTL_ERR_SYS_MEMORY_ALLOC_FAIL;
+		}
+		if( !file.Read("DATABASE", "Password",  m_config.Password) )
+		{
+			return NTL_ERR_SYS_LOG_SYSTEM_INITIALIZE_FAIL;
+		}
+		if( !file.Read("DATABASE", "Db",  m_config.Database) )
+		{
+			return NTL_ERR_DBC_CONNECTION_CONNECT_FAIL;
+		}
+		/*if( !file.Read("PERFORMANCE", "PlayerLimit",  m_config.PlayerLimit) )
+		{
+			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
+		}
+		if( !file.Read("PERFORMANCE", "PlayerSaveInterval",  m_config.PlayerSaveInterval) )
+		{
+			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
+		}
+		if( !file.Read("PERFORMANCE", "PlayerSaveStatsSaveOnlyOnLogout",  m_config.PlayerSaveStatsSaveOnlyOnLogout) )
+		{
+			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
+		}*/
 		return NTL_SUCCESS;
 	}
 	int					OnAppStart()

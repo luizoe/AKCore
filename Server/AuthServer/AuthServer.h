@@ -17,6 +17,10 @@ struct sSERVERCONFIG
 {
 	CNtlString		strClientAcceptAddr;
 	WORD			wClientAcceptPort;
+	CNtlString		Host;
+	CNtlString		User;
+	CNtlString		Password;
+	CNtlString		Database;
 };
 
 const DWORD					MAX_NUMOF_GAME_CLIENT = 3;
@@ -99,7 +103,22 @@ public:
 class CAuthServer : public CNtlServerApp
 {
 public:
-
+	const char*		GetConfigFileHost()
+	{
+		return m_config.Host.c_str();
+	}
+	const char*		GetConfigFileUser()
+	{
+		return m_config.User.c_str();
+	}
+	const char*		GetConfigFilePassword()
+	{
+		return m_config.Password.c_str();
+	}
+	const char*		GetConfigFileDatabase()
+	{
+		return m_config.Database.c_str();
+	}
 	int	OnInitApp()
 	{
 		m_nMaxSessionCount = MAX_NUMOF_SESSION;
@@ -151,7 +170,6 @@ public:
 		{
 			return rc;
 		}
-
 		if( !file.Read("Auth Server", "Address", m_config.strClientAcceptAddr) )
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
@@ -160,7 +178,22 @@ public:
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
 		}
-
+		if( !file.Read("DATABASE", "Host",  m_config.Host) )
+		{
+			return NTL_ERR_DBC_HANDLE_ALREADY_ALLOCATED;
+		}
+		if( !file.Read("DATABASE", "User",  m_config.User) )
+		{
+			return NTL_ERR_SYS_MEMORY_ALLOC_FAIL;
+		}
+		if( !file.Read("DATABASE", "Password",  m_config.Password) )
+		{
+			return NTL_ERR_SYS_LOG_SYSTEM_INITIALIZE_FAIL;
+		}
+		if( !file.Read("DATABASE", "Db",  m_config.Database) )
+		{
+			return NTL_ERR_DBC_CONNECTION_CONNECT_FAIL;
+		}
 		return NTL_SUCCESS;
 	}
 

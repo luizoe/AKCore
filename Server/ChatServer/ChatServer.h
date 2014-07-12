@@ -27,6 +27,10 @@ struct sSERVERCONFIG
 {
 	CNtlString		strClientAcceptAddr;
 	WORD			wClientAcceptPort;
+	CNtlString		Host;
+	CNtlString		User;
+	CNtlString		Password;
+	CNtlString		Database;
 };
 
 const DWORD					MAX_NUMOF_GAME_CLIENT = 3;
@@ -145,7 +149,22 @@ public:
 
 		return NTL_SUCCESS;
 	}
-
+	const char*		GetConfigFileHost()
+	{
+		return m_config.Host.c_str();
+	}
+	const char*		GetConfigFileUser()
+	{
+		return m_config.User.c_str();
+	}
+	const char*		GetConfigFilePassword()
+	{
+		return m_config.Password.c_str();
+	}
+	const char*		GetConfigFileDatabase()
+	{
+		return m_config.Database.c_str();
+	}
 	int	OnCreate()
 	{
 		int rc = NTL_SUCCESS;
@@ -155,36 +174,28 @@ public:
 		{
 			return rc;
 		}
-
 		rc = m_network.Associate( &m_clientAcceptor, true );
 		if( NTL_SUCCESS != rc )
 		{
 			return rc;
 		}
-
 		return NTL_SUCCESS;
-
 	}
-
 	void	OnDestroy()
 	{
 	}
-
 	int	OnCommandArgument(int argc, _TCHAR* argv[])
 	{
 		return NTL_SUCCESS;
 	}
-
 	int	OnConfiguration(const char * lpszConfigFile)
 	{
 		CNtlIniFile file;
-
 		int rc = file.Create( lpszConfigFile );
 		if( NTL_SUCCESS != rc )
 		{
 			return rc;
 		}
-
 		if( !file.Read("Chat Server", "Address", m_config.strClientAcceptAddr) )
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
@@ -193,15 +204,28 @@ public:
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
 		}
-
+		if( !file.Read("DATABASE", "Host",  m_config.Host) )
+		{
+			return NTL_ERR_DBC_HANDLE_ALREADY_ALLOCATED;
+		}
+		if( !file.Read("DATABASE", "User",  m_config.User) )
+		{
+			return NTL_ERR_SYS_MEMORY_ALLOC_FAIL;
+		}
+		if( !file.Read("DATABASE", "Password",  m_config.Password) )
+		{
+			return NTL_ERR_SYS_LOG_SYSTEM_INITIALIZE_FAIL;
+		}
+		if( !file.Read("DATABASE", "Db",  m_config.Database) )
+		{
+			return NTL_ERR_DBC_CONNECTION_CONNECT_FAIL;
+		}
 		return NTL_SUCCESS;
 	}
-
 	int	OnAppStart()
 	{
 		return NTL_SUCCESS;
 	}
-
 	void	Run()
 	{
 		DWORD dwTickCur, dwTickOld = ::GetTickCount();
@@ -224,7 +248,6 @@ private:
 	sSERVERCONFIG				m_config;
 public:
 	MySQLConnWrapper *			db;
-
 public:
 	bool						AddUser(const char * lpszUserID, CClientSession * pSession)
 	{
@@ -261,12 +284,8 @@ public:
 			it->second->PushPacket( pPacket );
 		}
 	}
-
-
 	typedef std::map<CNtlString, CClientSession*> USERLIST;
 	typedef USERLIST::value_type USERVAL;
 	typedef USERLIST::iterator USERIT;
-
 	USERLIST					m_userList;
-
 };

@@ -3,7 +3,6 @@
 #include "NtlSfx.h"
 #include "NtlPacketEncoder_RandKey.h"
 #include "mysqlconn_wrapper.h"
-
 enum APP_LOG
 {
 	PRINT_APP = 2,
@@ -17,6 +16,10 @@ struct sSERVERCONFIG
 {
 	CNtlString		strClientAcceptAddr;
 	WORD			wClientAcceptPort;
+	CNtlString		Host;
+	CNtlString		User;
+	CNtlString		Password;
+	CNtlString		Database;
 };
 
 const DWORD					MAX_NUMOF_GAME_CLIENT = 3;
@@ -63,6 +66,7 @@ public:
 	void						SendServerListOneReq(CNtlPacket * pPacket);
 	void						SendCharLoadReq(CNtlPacket * pPacket, CCharServer * app);
 	void						SendCharCreateReq(CNtlPacket * pPacket, CCharServer * app);
+	void						SendCharCreateInitReq(CCharServer * app);
 	void						SendCharDeleteReq(CNtlPacket * pPacket, CCharServer * app);
 	void						SendCharExitReq(CNtlPacket * pPacket);
 	void						SendCharWaitCheckReq(CNtlPacket * pPacket);
@@ -119,13 +123,24 @@ public:
 		{
 			return NTL_ERR_SYS_MEMORY_ALLOC_FAIL;
 		}
-
-
-
 		return NTL_SUCCESS;
 	}
-
-
+	const char*		GetConfigFileHost()
+	{
+		return m_config.Host.c_str();
+	}
+	const char*		GetConfigFileUser()
+	{
+		return m_config.User.c_str();
+	}
+	const char*		GetConfigFilePassword()
+	{
+		return m_config.Password.c_str();
+	}
+	const char*		GetConfigFileDatabase()
+	{
+		return m_config.Database.c_str();
+	}
 	int					OnCreate()
 	{
 		int rc = NTL_SUCCESS;
@@ -141,20 +156,15 @@ public:
 		{
 			return rc;
 		}
-
 		return NTL_SUCCESS;
-
 	}
-
 	void				OnDestroy()
 	{
 	}
-
 	int					OnCommandArgument(int argc, _TCHAR* argv[])
 	{
 		return NTL_SUCCESS;
 	}
-	
 	int					OnConfiguration(const char * lpszConfigFile)
 	{
 		CNtlIniFile file;
@@ -164,8 +174,6 @@ public:
 		{
 			return rc;
 		}
-
-
 		if( !file.Read("Char Server", "Address", m_config.strClientAcceptAddr) )
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
@@ -174,17 +182,28 @@ public:
 		{
 			return NTL_ERR_SYS_CONFIG_FILE_READ_FAIL;
 		}
-
+		if( !file.Read("DATABASE", "Host",  m_config.Host) )
+		{
+			return NTL_ERR_DBC_HANDLE_ALREADY_ALLOCATED;
+		}
+		if( !file.Read("DATABASE", "User",  m_config.User) )
+		{
+			return NTL_ERR_SYS_MEMORY_ALLOC_FAIL;
+		}
+		if( !file.Read("DATABASE", "Password",  m_config.Password) )
+		{
+			return NTL_ERR_SYS_LOG_SYSTEM_INITIALIZE_FAIL;
+		}
+		if( !file.Read("DATABASE", "Db",  m_config.Database) )
+		{
+			return NTL_ERR_DBC_CONNECTION_CONNECT_FAIL;
+		}
 		return NTL_SUCCESS;
 	}
-
-
 	int					OnAppStart()
 	{
 		return NTL_SUCCESS;
 	}
-
-
 	void				Run()
 	{
 		DWORD dwTickCur, dwTickOld = ::GetTickCount();
@@ -200,9 +219,6 @@ public:
 			Sleep(2);
 		}
 	}
-
-
-
 private:
 	CNtlAcceptor				m_clientAcceptor;
 	CNtlLog  					m_log;

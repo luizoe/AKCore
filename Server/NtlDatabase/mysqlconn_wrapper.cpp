@@ -42,14 +42,20 @@ void MySQLConnWrapper::manageException(sql::SQLException& e)
 
 void MySQLConnWrapper::connect()
 {
-    try {
+    try
+	{
         driver = get_driver_instance();
-    } catch (sql::SQLException &e) {
+    }
+	catch (sql::SQLException &e)
+	{
         manageException(e);
     }
-    try {
+    try
+	{
         con = driver->connect(host, user, password);
-    } catch (sql::SQLException &e) {
+    }
+	catch (sql::SQLException &e)
+	{
         manageException(e);
     }
 }

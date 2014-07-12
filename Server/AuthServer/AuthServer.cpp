@@ -84,12 +84,6 @@ int AuthServerMain(int argc, _TCHAR* argv[])
 		return rc;
 	}
 
-// CONNECT TO MYSQL
-	app.db = new MySQLConnWrapper;
-	app.db->connect();
-	app.db->switchDb("dbo");
-
-
 // CHECK INI FILE AND START PROGRAM
 	NtlSetPrintStream( traceFileStream.GetFilePtr() );
 	NtlSetPrintFlag( PRINT_APP | PRINT_SYSTEM );
@@ -100,6 +94,12 @@ int AuthServerMain(int argc, _TCHAR* argv[])
 		NTL_PRINT(PRINT_APP, "Server Application Create Fail %d(%s)", rc, NtlGetErrorMessage(rc) );
 		return rc;
 	}
+
+	// CONNECT TO MYSQL
+	app.db = new MySQLConnWrapper;
+	app.db->setConfig(app.GetConfigFileHost(), app.GetConfigFileUser(), app.GetConfigFilePassword(), app.GetConfigFileDatabase());
+	app.db->connect();
+	app.db->switchDb(app.GetConfigFileDatabase());
 
 	app.Start();
 	Sleep(500);
