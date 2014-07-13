@@ -1,63 +1,12 @@
 #include "stdafx.h"
 #include "GameServer.h"
 
-sVECTOR3	PlayerInfos::GetPosition()
-{
-	return this->vCurLoc;
-}
-sVECTOR3	PlayerInfos::GetDirection()
-{
-	return this->vCurDir;
-}
-void		PlayerInfos::SetPosition(sVECTOR3 curPos, sVECTOR3 curDir)
-{
-	this->vCurLoc.x = curPos.x;
-	this->vCurLoc.y = curPos.y;
-	this->vCurLoc.z = curPos.z;
-
-	this->vCurDir.x = curDir.x;
-	this->vCurDir.y = curDir.y;
-	this->vCurDir.z = curDir.z;
-}
-void		PlayerInfos::SetWorldID(int id)
-{
-	this->WorldID = id;
-}
-int			PlayerInfos::GetWorldID()
-{
-	return this->WorldID;
-}
-void		PlayerInfos::SetWorldTableID(int id)
-{
-	this->WorldTableID = id;
-}
-int			PlayerInfos::GetWorldTableID()
-{
-	return this->WorldTableID;
-}
-void		PlayerInfos::Setmob_SpawnTime(RwUInt32 id)
-{
-	this->mob_SpawnTime = id;
-}
-RwUInt32		PlayerInfos::Getmob_SpawnTime()
-{
-	return this->mob_SpawnTime;
-}
-
-void		PlayerInfos::Setlast_SpawnPos(sVECTOR3 id)
-{
-	this->last_SpawnPos = id;
-}
-sVECTOR3		PlayerInfos::Getlast_SpawnPos()
-{
-	return this->last_SpawnPos;
-}
-
 void		PlayerInfos::SavePlayerData()
 {
 	this->db = new MySQLConnWrapper;
+	this->db->setConfig(this->app->GetConfigFileHost(), this->app->GetConfigFileUser(), this->app->GetConfigFilePassword(), this->app->GetConfigFileDatabase());
 	this->db->connect();
-	this->db->switchDb("dbo");
+	this->db->switchDb(this->app->GetConfigFileDatabase());
 
 	char* save_query = "UPDATE characters SET CurLocX=? , CurLocY=? , CurLocZ=? , CurDirX=? , CurDirZ=? , level=?, exp=?, WorldTable=?, WorldID=?, money=?, MoneyBank=?, reputation=?, MudosaPoint=?, SpPoint=?, BaseStr=?, LastStr=?, BaseCon=?, LastCon=?, BaseFoc=?, LastFoc=?, BaseDex=?, LastDex=?, BaseSol=?, LastSol=?, BaseEng=?, LastEng=?, BaseMaxLP=?, LastMaxLP=?, BaseMaxRp=?, LastMaxRP=? WHERE CharID = ?";
 	char* save_query2 = "UPDATE characters SET BaseLpRegen=?, LastLpRegen=?, BaseLpSitdownRegen=?, LastLpSitdownRegen=?, BaseLpBattleRegen=?, LastLpBattleRegen=?, BaseEpRegen=?, LastEpRegen=?, BaseEpSitdownRegen=?, LastEpSitdownRegen=?, BaseEpBattleRegen=?, LastEpBattleRegen=?, BaseRpRegen=?, LastRpRegen=?, LastRpDimimutionRate=?, BasePhysicalOffence=?, LastPhysicalOffence=?, BasePhysicalDefence=? WHERE CharID = ?";
@@ -273,23 +222,7 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 		pItemData->byBattle_Attribute;
 		//printf("%d, %d, %d, %d, %d, %d\n", pItemData->dwPhysical_OffenceUpgrade, pItemData->dwPhysical_DefenceUpgrade, pItemData->dwEnergy_OffenceUpgrade, pItemData->dwEnergy_DefenceUpgrade, pItemData->byNeed_Con, pItemData->byNeed_Dex);
 	}
-	app->db->prepare("UPDATE characters SET LastAttackSpeedRate = ?, LastEnergyDefence = ?, LastEnergyOffence = ?,LastPhysicalDefence = ?, LastPhysicalOffence = ? WHERE CharID = ?");
-	app->db->setInt(1, this->pcProfile->avatarAttribute.wLastAttackSpeedRate);
-	app->db->setInt(2, this->pcProfile->avatarAttribute.wLastEnergyDefence);
-	app->db->setInt(3,this->pcProfile->avatarAttribute.wLastEnergyOffence);
-	app->db->setInt(4, this->pcProfile->avatarAttribute.wLastPhysicalDefence);
-	app->db->setInt(5, this->pcProfile->avatarAttribute.wLastPhysicalOffence);
-	app->db->setInt(6,  this->pcProfile->charId);
-	app->db->execute();
-	app->db->prepare("UPDATE characters SET LastStr = ?, LastCon = ?, LastFoc = ?, LastDex = ?,LastSol = ?, LastEng = ? WHERE CharID = ?");
-	app->db->setInt(1, this->pcProfile->avatarAttribute.byLastStr);
-	app->db->setInt(2, this->pcProfile->avatarAttribute.byLastCon);
-	app->db->setInt(3, this->pcProfile->avatarAttribute.byLastFoc);
-	app->db->setInt(4, this->pcProfile->avatarAttribute.byLastDex);
-	app->db->setInt(5, this->pcProfile->avatarAttribute.byLastSol);
-	app->db->setInt(6, this->pcProfile->avatarAttribute.byLastEng);
-	app->db->setInt(7,  this->pcProfile->charId);
-	app->db->execute();
+	this->SaveMe();
 
 	CNtlPacket packet(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
     sGU_AVATAR_ATTRIBUTE_UPDATE * res = (sGU_AVATAR_ATTRIBUTE_UPDATE *)packet.GetPacketData();
@@ -310,6 +243,7 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 	res->wOpCode = GU_AVATAR_ATTRIBUTE_UPDATE;
 	packet.SetPacketLen(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
 	g_pApp->Send( this->MySession , &packet );
+
 	app->db->prepare("SELECT * FROM characters WHERE CharID = ?");
 	app->db->setInt(1, this->pcProfile->charId);
 	app->db->execute();

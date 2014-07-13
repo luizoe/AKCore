@@ -24,7 +24,7 @@ void CClientSession::SendGameEnterReq(CNtlPacket * pPacket, CGameServer * app)
 	this->plr = new PlayerInfos();
 	this->plr->pcProfile->charId = req->charId;
 	this->plr->SetAccountID(req->accountId);
-
+	this->plr->setMyAPP(app);
 	CNtlPacket packet(sizeof(sGU_GAME_ENTER_RES));
 	sGU_GAME_ENTER_RES * res = (sGU_GAME_ENTER_RES *)packet.GetPacketData();
 
@@ -2746,4 +2746,24 @@ void CClientSession::SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app
 	packet.SetPacketLen(sizeof(sGU_CHAR_ACTION_SKILL));
 	int rc = g_pApp->Send(this->GetHandle(), &packet);
 	app->UserBroadcastothers(&packet, this);*/
+}
+void CClientSession::SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	printf("--- UG_SHOP_GAMBLE_BUY_REQ --- \n");
+	sUG_SHOP_GAMBLE_BUY_REQ *req = (sUG_SHOP_GAMBLE_BUY_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_SHOP_GAMBLE_BUY_RES));
+	sGU_SHOP_GAMBLE_BUY_RES * res = (sGU_SHOP_GAMBLE_BUY_RES *)packet.GetPacketData();
+
+	res->handle = req->handle;
+	res->wOpCode = GU_SHOP_GAMBLE_BUY_RES;
+	res->wResultCode = GAME_SUCCESS;
+
+	CItemMixMachineTable *mudo = app->g_pTableContainer->GetItemMixMachineTable();
+	for ( CTable::TABLEIT itmob = mudo->Begin(); itmob != mudo->End(); ++itmob )
+	{
+		sITEM_MIX_MACHINE_TBLDAT* pMusoData = (sITEM_MIX_MACHINE_TBLDAT*) itmob->second;
+		
+	}
+	packet.SetPacketLen(sizeof(sGU_SHOP_GAMBLE_BUY_RES));
+	int rc = g_pApp->Send(this->GetHandle(), &packet);
 }

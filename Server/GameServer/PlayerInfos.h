@@ -27,28 +27,37 @@ public:
 	};
 	void		StoreSession(HSESSION ss){this->MySession = ss;};
 	void		ClearTheList();
-	sVECTOR3	GetPosition();
-	sVECTOR3	GetDirection();
-	void		SetPosition(sVECTOR3 curPos, sVECTOR3 curDir);
-	int			GetAccountID(){return this->AccountID;};
-	void		SetAccountID(int id){this->AccountID = id;};
-	void		SetGuildName(std::string name){this->guildname = name;};
-	std::string		GetGuildName(){return this->guildname;};
-	void		SetPlayerName(std::string name){this->username = name;};
-	std::string		GetPlayerName(){return this->username;};
-	void		SetWorldID(int id);
-	int			GetWorldID();
-	void		SetWorldTableID(int id);
-	int			GetWorldTableID();
-	void		Setmob_SpawnTime(RwUInt32 id);
-	RwUInt32	Getmob_SpawnTime();
+	sVECTOR3	GetPosition(){return this->vCurLoc;};
+	sVECTOR3	GetDirection(){return this->vCurDir;};
+	void		SetPosition(const sVECTOR3 curPos, const sVECTOR3 curDir)
+	{
+		this->vCurLoc.x = curPos.x;
+		this->vCurLoc.y = curPos.y;
+		this->vCurLoc.z = curPos.z;
 
-	void		Setlast_SpawnPos(sVECTOR3 id);
-	sVECTOR3	Getlast_SpawnPos();
+		this->vCurDir.x = curDir.x;
+		this->vCurDir.y = curDir.y;
+		this->vCurDir.z = curDir.z;
+	};
+	int			GetAccountID(){return this->AccountID;};
+	void		SetAccountID(const int id){this->AccountID = id;};
+	void		SetGuildName(const std::string name){this->guildname = name;};
+	std::string		GetGuildName(){return this->guildname;};
+	void		SetPlayerName(const std::string name){this->username = name;};
+	std::string		GetPlayerName(){return this->username;};
+	void		SetWorldID(const int id){this->WorldID = id;};
+	int			GetWorldID(){return this->WorldID;};
+	void		SetWorldTableID(const int id){this->WorldTableID = id;};
+	int			GetWorldTableID(){return this->WorldTableID;};
+	void		Setmob_SpawnTime(const RwUInt32 id){this->mob_SpawnTime = id;};
+	RwUInt32	Getmob_SpawnTime(){return this->mob_SpawnTime;};
+	void		setMyAPP(CGameServer * _app){this->app = _app;};
+	void		Setlast_SpawnPos(const sVECTOR3 id){this->last_SpawnPos = id;};
+	sVECTOR3	Getlast_SpawnPos(){return this->last_SpawnPos;};
 	// PLAYER STAT CALCULE
 	void		calculeMyStat(CGameServer * app);
 	void		setZero();
-	void		StoreHandle(RwUInt32 _avatarHandle){this->avatarHandle = _avatarHandle;};
+	void		StoreHandle(const RwUInt32 _avatarHandle){this->avatarHandle = _avatarHandle;};
 private:
 	MySQLConnWrapper			*db;
 public:
@@ -66,4 +75,5 @@ private:
 	RwUInt32			mob_SpawnTime;
 	sVECTOR3			last_SpawnPos;
 	RwUInt32			avatarHandle;
+	CGameServer *		app;
 };

@@ -34,6 +34,7 @@
 #include "MerchantTable.h"
 #include "ItemTable.h"
 #include "FormulaTable.h"
+#include "ItemMixMachineTable.h"
 // END TABLES
 #include "PlayerInfos.h"
 #include "MobActivity.h"
@@ -205,6 +206,8 @@ public:
 	// SKILL
 	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
+	// MUDOSA
+	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	//Game Server functions
 	sGU_OBJECT_CREATE			characterspawnInfo;
 	//
