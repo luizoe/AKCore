@@ -2073,7 +2073,8 @@ void CGameServer::UpdateClient(CNtlPacket * pPacket, CClientSession * pSession)
 // MAKE MOBS MOVE
 	if(timeGetTime() - app->mob->last_mobMove >= MONSTER_MOVE_UPDATE_TICK)
 	{
-	//	app->mob->MonsterRandomWalk(pPacket);
+		/*if ((rand() % 100) >= 60) 
+			app->mob->MonsterRandomWalk(pPacket);*/
 		app->mob->last_mobMove = timeGetTime();
 	}
 }
@@ -2599,23 +2600,23 @@ void	CClientSession::SendScouterIndicatorReq(CNtlPacket * pPacket, CGameServer *
 		res->hTarget = req->hTarget;
 		res->dwRetValue = 0;
 		res->wOpCode = GU_SCOUTER_INDICATOR_RES;
-		res->wResultCode = GAME_SUCCESS;
-		
+
 		CMobTable *Mob = app->g_pTableContainer->GetMobTable();
 		for ( CTable::TABLEIT itmob = Mob->Begin(); itmob != Mob->End(); ++itmob )
 		{
 			sMOB_TBLDAT* pMOBtData = (sMOB_TBLDAT*) itmob->second;
 			if (pMOBtData->tblidx == mobid)
 			{
-				CFormulaTable *form = app->g_pTableContainer->GetFormulaTable();
-				for ( CTable::TABLEIT itfor = form->Begin(); itfor != form->End(); ++itfor )
-				{
-					sFORMULA_TBLDAT *formtbl = (sFORMULA_TBLDAT*) itmob->second;
-					float lolilol = formtbl->afRate[0];
-				}
+				res->dwRetValue = this->gsf->CalculePowerLevel(pMOBtData);
+				res->wResultCode = GAME_SUCCESS;
+				break;
 			}
+			else
+				res->wResultCode = GAME_FAIL;
 		}
 	}
+	packet.SetPacketLen( sizeof(sGU_SCOUTER_INDICATOR_RES) );
+	g_pApp->Send( this->GetHandle() , &packet );
 }
 void	CClientSession::SendDragonBallCheckReq(CNtlPacket * pPacket, CGameServer * app) // THIS IS THE FIRST VERSION
 {
