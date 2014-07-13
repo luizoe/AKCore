@@ -269,7 +269,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 			break;
 		case UG_SKILL_UPGRADE_REQ:
 		{
-			printf("--- UG_SKILL_UPGRADE_REQ --- \n");
+			CClientSession::SendCharSkillUpgrade(pPacket, app);
 		}
 			break;
 		case UG_SKILL_RP_BONUS_SETTING_REQ:

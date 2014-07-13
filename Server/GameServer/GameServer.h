@@ -146,7 +146,7 @@ public:
 	void						SendCharTargetInfo(CNtlPacket * pPacket);
 	void						SendCharSitDown(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharStandUp(CNtlPacket * pPacket, CGameServer * app);
-	
+	void						SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharFollowMove(CNtlPacket * pPacket, CGameServer * app);
 	void						SendExcuteTriggerObject(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharBindReq(CNtlPacket * pPacket, CGameServer * app);

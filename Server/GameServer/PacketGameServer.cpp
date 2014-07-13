@@ -2157,28 +2157,52 @@ void CClientSession::SendCharLearnSkillReq(CNtlPacket * pPacket, CGameServer * a
 						break;
 					}
 
-					if(req0->byPos == j){
+					if(req0->byPos == j)
+					{
 						sSKILL_TBLDAT* pSkillData = (sSKILL_TBLDAT*) pSkillTable->FindData( pMerchantData->aitem_Tblidx[j] );
-					  if(app->qry->CheckIfSkillAlreadyLearned(pSkillData->tblidx, this->plr->pcProfile->charId) == false){
-						if(this->plr->pcProfile->dwZenny >= pSkillData->dwRequire_Zenny){
-							if(this->plr->pcProfile->byLevel >= pSkillData->byRequire_Train_Level){
-								if(this->plr->pcProfile->dwSpPoint >= pSkillData->wRequireSP){
-									skill_learn_result = 500;
-									// Skill learned notification
-									CNtlPacket packet2(sizeof(sGU_SKILL_LEARNED_NFY));
-									sGU_SKILL_LEARNED_NFY * res2 = (sGU_SKILL_LEARNED_NFY *)packet2.GetPacketData();
+						if(app->qry->CheckIfSkillAlreadyLearned(pSkillData->tblidx, this->plr->pcProfile->charId) == false)
+						{
+							if(this->plr->pcProfile->dwZenny >= pSkillData->dwRequire_Zenny)
+							{
+								if(this->plr->pcProfile->byLevel >= pSkillData->byRequire_Train_Level)
+								{
+									if(this->plr->pcProfile->dwSpPoint >= pSkillData->wRequireSP)
+									{
+										skill_learn_result = 500;
+										// Skill learned notification
+										CNtlPacket packet2(sizeof(sGU_SKILL_LEARNED_NFY));
+										sGU_SKILL_LEARNED_NFY * res2 = (sGU_SKILL_LEARNED_NFY *)packet2.GetPacketData();
 
-									res2->wOpCode = GU_SKILL_LEARNED_NFY;
-									res2->skillId = pSkillData->tblidx;
-									res2->bySlot = pSkillData->bySlot_Index;
+										res2->wOpCode = GU_SKILL_LEARNED_NFY;
+										res2->skillId = pSkillData->tblidx;
+										res2->bySlot = pSkillData->bySlot_Index;
 
-									app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, pSkillData->wNext_Skill_Train_Exp);
-									this->plr->pcProfile->dwZenny -= pSkillData->dwRequire_Zenny;
-									this->plr->pcProfile->dwSpPoint -= pSkillData->wRequireSP;
+										app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, pSkillData->wNext_Skill_Train_Exp);
+										this->plr->pcProfile->dwZenny -= pSkillData->dwRequire_Zenny;
+										this->plr->pcProfile->dwSpPoint -= pSkillData->wRequireSP;
 
-									packet2.SetPacketLen( sizeof(sGU_SKILL_LEARNED_NFY) );
-									g_pApp->Send( this->GetHandle() , &packet2 );
-									break;
+										packet2.SetPacketLen( sizeof(sGU_SKILL_LEARNED_NFY) );
+										g_pApp->Send( this->GetHandle() , &packet2 );
+										app->qry->UpdateSPPoint(this->plr->pcProfile->charId, this->plr->pcProfile->dwSpPoint);
+										
+										CNtlPacket packet3(sizeof(sGU_UPDATE_CHAR_SP));
+ 										sGU_UPDATE_CHAR_SP * res3 = (sGU_UPDATE_CHAR_SP *)packet3.GetPacketData();
+ 										res3->wOpCode = GU_UPDATE_CHAR_SP;
+ 										res3->dwSpPoint = this->plr->pcProfile->dwSpPoint;
+ 										packet3.SetPacketLen(sizeof(sGU_UPDATE_CHAR_SP));
+ 										g_pApp->Send(this->GetHandle(), &packet3);
+
+										app->qry->SetMinusMoney(this->plr->pcProfile->charId, pSkillData->dwRequire_Zenny);
+										CNtlPacket packet4(sizeof(sGU_UPDATE_CHAR_ZENNY));
+										sGU_UPDATE_CHAR_ZENNY * res4 = (sGU_UPDATE_CHAR_ZENNY *)packet4.GetPacketData();
+										res4->bIsNew = true;
+										res4->byChangeType = 0;
+										res4->dwZenny = this->plr->pcProfile->dwZenny;
+										res4->handle = this->GetavatarHandle();
+										res4->wOpCode = GU_UPDATE_CHAR_ZENNY;
+										packet4.SetPacketLen(sizeof(sGU_UPDATE_CHAR_ZENNY));
+ 										g_pApp->Send(this->GetHandle(), &packet4);
+										break;
 								}else
 								skill_learn_result = 645;
 								break;
@@ -2779,3 +2803,55 @@ void CClientSession::SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app)
 	packet.SetPacketLen(sizeof(sGU_SHOP_GAMBLE_BUY_RES));
 	int rc = g_pApp->Send(this->GetHandle(), &packet);*/
 }
+//------------------------------------------------
+// Character Skill Upgrade By luiz45
+//------------------------------------------------
+void CClientSession::SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app)
+{
+	//Upgrading Process
+	sUG_SKILL_UPGRADE_REQ * req = (sUG_SKILL_UPGRADE_REQ*)pPacket->GetPacketData();
+	CSkillTable* pSkillTable = app->g_pTableContainer->GetSkillTable();
+	
+	app->db->prepare("SELECT * FROM skills WHERE owner_id=? AND SlotID = ? ");
+	app->db->setInt(1, this->plr->pcProfile->charId);
+	app->db->setInt(2, req->bySlotIndex);
+	app->db->execute();
+	app->db->fetch();
+
+	int skillID = app->db->getInt("skill_id");
+	sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skillID));
+ 	
+ 	if (pSkillData->dwNextSkillTblidx)
+ 	{
+ 		CNtlPacket packet(sizeof(sGU_SKILL_UPGRADE_RES));
+ 		sGU_SKILL_UPGRADE_RES * res = (sGU_SKILL_UPGRADE_RES *)packet.GetPacketData();
+ 		
+ 		CNtlPacket packet2(sizeof(sGU_UPDATE_CHAR_SP));
+ 		sGU_UPDATE_CHAR_SP * res2 = (sGU_UPDATE_CHAR_SP *)packet2.GetPacketData();
+ 
+ 		res->wOpCode = GU_SKILL_UPGRADE_RES;
+ 		res->wResultCode = GAME_SUCCESS;
+ 		res->skillId = pSkillData->dwNextSkillTblidx;
+ 		res->bySlot = pSkillData->bySlot_Index;		
+ 		packet.SetPacketLen(sizeof(sGU_SKILL_UPGRADE_RES));
+ 		g_pApp->Send(this->GetHandle(), &packet);
+ 		//Skill Level(ID)
+ 		app->db->prepare("UPDATE skills SET skill_id=? WHERE owner_id=? AND skill_id=?");
+ 		app->db->setInt(1, pSkillData->dwNextSkillTblidx);
+ 		app->db->setInt(2, this->plr->pcProfile->charId);
+ 		app->db->setInt(3, skillID);
+ 		app->db->execute();
+ 
+ 		//Update player's SP
+		this->plr->pcProfile->dwSpPoint -= 1;
+		app->qry->UpdateSPPoint(this->plr->pcProfile->charId, this->plr->pcProfile->dwSpPoint);
+ 
+ 		//Send a response to client to get Update SP OK
+ 		res2->wOpCode = GU_UPDATE_CHAR_SP;
+ 		res2->dwSpPoint = this->plr->pcProfile->dwSpPoint;
+ 		
+ 		packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_SP));
+ 		g_pApp->Send(this->GetHandle(), &packet2);
+ 	}
+ }
+ 
