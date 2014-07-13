@@ -208,6 +208,11 @@ public:
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
+	// BANK
+	void						SendBankStartReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendBankEndReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendBankBuyReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app);
 	//Game Server functions
 	sGU_OBJECT_CREATE			characterspawnInfo;
 	//

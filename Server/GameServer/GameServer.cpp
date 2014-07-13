@@ -488,10 +488,15 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 			printf("--- UG_PARTY_INVEN_ITEM_RANK_SET_REQ --- \n");
 		}
 			break;
-
+		case UG_BANK_LOAD_REQ:
+		{
+			printf("--- UG_BANK_LOAD_REQ --- \n");
+		}
+			break;
 		case UG_BANK_START_REQ:
 		{
 			printf("--- UG_BANK_START_REQ --- \n");
+			CClientSession::SendBankStartReq(pPacket, app);
 		}
 			break;
 		case UG_BANK_MOVE_REQ:
@@ -507,6 +512,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_BANK_END_REQ:
 		{
 			printf("--- UG_BANK_END_REQ --- \n");
+			CClientSession::SendBankEndReq(pPacket, app);
 		}
 			break;
 		case UG_BANK_ZENNY_REQ:
@@ -517,6 +523,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_BANK_BUY_REQ:
 		{
 			printf("--- UG_BANK_BUY_REQ --- \n");
+			CClientSession::SendBankBuyReq(pPacket, app);
 		}
 			break;
 		case UG_BANK_ITEM_DELETE_REQ:
@@ -976,11 +983,6 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_CROSSFIRE_REQ:
 		{
 			printf("--- UG_CROSSFIRE_REQ --- \n");
-		}
-			break;
-		case UG_BANK_LOAD_REQ:
-		{
-			printf("--- UG_BANK_LOAD_REQ --- \n");
 		}
 			break;
 		case UG_GUILD_CHANGE_NAME_REQ:

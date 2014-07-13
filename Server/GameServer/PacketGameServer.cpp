@@ -2084,7 +2084,7 @@ void CGameServer::UpdateClient(CNtlPacket * pPacket, CClientSession * pSession)
 	if(timeGetTime() - app->mob->last_mobMove >= MONSTER_MOVE_UPDATE_TICK)
 	{
 		/*if ((rand() % 100) >= 60) 
-			app->mob->MonsterRandomWalk(pPacket);*/
+			app->mob->MonsterRandomWalk(pPacket);*/ // we need replace this shit by -> CMobMovePatternTable
 		app->mob->last_mobMove = timeGetTime();
 	}
 }
@@ -2852,6 +2852,54 @@ void CClientSession::SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * ap
  		
  		packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_SP));
  		g_pApp->Send(this->GetHandle(), &packet2);
- 	}
- }
- 
+	}
+}
+void		CClientSession::SendBankStartReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_BANK_START_REQ * req = (sUG_BANK_START_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_BANK_START_RES));
+	sGU_BANK_START_RES * res = (sGU_BANK_START_RES *)packet.GetPacketData();
+
+	res->handle = req->handle;
+	res->wOpCode = GU_BANK_START_RES;
+	res->wResultCode = GAME_SUCCESS;
+
+	packet.SetPacketLen(sizeof(sGU_BANK_START_RES));
+	g_pApp->Send(this->GetHandle(), &packet);
+}
+void		CClientSession::SendBankEndReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	CNtlPacket packet(sizeof(sGU_BANK_END_RES));
+	sGU_BANK_END_RES * res = (sGU_BANK_END_RES *)packet.GetPacketData();
+
+	res->wOpCode = GU_BANK_END_RES;
+	res->wResultCode = GAME_SUCCESS;
+
+	packet.SetPacketLen(sizeof(sGU_BANK_END_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet);
+}
+void		CClientSession::SendBankBuyReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_BANK_BUY_REQ * req = (sUG_BANK_BUY_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_BANK_BUY_RES));
+	sGU_BANK_BUY_RES * res = (sGU_BANK_BUY_RES *)packet.GetPacketData();
+
+	res->hItemhandle;
+	res->hNpchandle;
+	res->sData;
+	res->wOpCode = GU_BANK_BUY_RES;
+	res->wResultCode = GAME_SUCCESS;
+}
+void	CClientSession::SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_BANK_LOAD_REQ * req = (sUG_BANK_LOAD_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_BANK_LOAD_RES));
+	sGU_BANK_LOAD_RES * res = (sGU_BANK_LOAD_RES *)packet.GetPacketData();
+
+	res->handle = req->handle;
+	res->wOpCode = GU_BANK_LOAD_RES;
+	res->wResultCode = GAME_SUCCESS;
+	
+	packet.SetPacketLen(sizeof(sGU_BANK_LOAD_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet);
+}
