@@ -187,9 +187,9 @@ void		PlayerInfos::setZero()
 	this->pcProfile->avatarAttribute.byLastSol = this->pcProfile->avatarAttribute.byBaseSol;
 	this->pcProfile->avatarAttribute.byLastStr = this->pcProfile->avatarAttribute.byBaseStr;
 
-	this->pcProfile->wCurLP = 100;
-	this->pcProfile->avatarAttribute.wBaseMaxLP = 100;
-	this->pcProfile->avatarAttribute.wLastMaxRP = this->pcProfile->wCurLP;
+	this->pcProfile->avatarAttribute.wLastMaxRP = this->pcProfile->avatarAttribute.wLastMaxRP;
+	this->pcProfile->avatarAttribute.wLastMaxEP = this->pcProfile->avatarAttribute.wBaseMaxEP;
+	this->pcProfile->wCurLP = this->pcProfile->avatarAttribute.wLastMaxLP = this->pcProfile->avatarAttribute.wBaseMaxLP;
 }
 void		test(BYTE byAttributeTotalCount, void* pvRawData, sAVATAR_ATTRIBUTE* pAttributeData)
 {
@@ -254,6 +254,14 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 	app->db->setInt(6, this->pcProfile->avatarAttribute.byLastEng);
 	app->db->setInt(7,  this->pcProfile->charId);
 	app->db->execute();
+
+	app->db->prepare("UPDATE characters SET LastMaxLP = ?, LastMaxEP = ?, LastMaxRP = ? WHERE CharID = ?");
+	app->db->setInt(1, this->pcProfile->avatarAttribute.wLastMaxLP);
+	app->db->setInt(2, this->pcProfile->avatarAttribute.wLastMaxEP);
+	app->db->setInt(3, this->pcProfile->avatarAttribute.wLastMaxRP);
+	app->db->setInt(4,  this->pcProfile->charId);
+	app->db->execute();
+
 	CNtlPacket packet(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
     sGU_AVATAR_ATTRIBUTE_UPDATE * res = (sGU_AVATAR_ATTRIBUTE_UPDATE *)packet.GetPacketData();
 

@@ -39,26 +39,33 @@ void CClientSession::SendGameEnterReq(CNtlPacket * pPacket, CGameServer * app)
 //--------------------------------------------------------------------------------------//
 //		Send avatar char info
 //--------------------------------------------------------------------------------------//
-void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData)
+void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, int level)
 {
 	app->db->prepare("UPDATE characters SET BaseStr = ?, BaseCon = ?, BaseFoc = ?, BaseDex = ?,BaseSol = ?, BaseEng = ? WHERE CharID = ?");
-	app->db->setInt(1, pTblData->byStr);
-	app->db->setInt(2, pTblData->byCon);
-	app->db->setInt(3, pTblData->byFoc);
-	app->db->setInt(4, pTblData->byDex);
-	app->db->setInt(5, pTblData->bySol);
-	app->db->setInt(6, pTblData->byEng);
+	app->db->setInt(1, pTblData->byStr + (pTblData->fLevel_Up_Str * level));
+	app->db->setInt(2, pTblData->byCon + (pTblData->fLevel_Up_Con * level));
+	app->db->setInt(3, pTblData->byFoc + (pTblData->fLevel_Up_Foc * level));
+	app->db->setInt(4, pTblData->byDex + (pTblData->fLevel_Up_Dex * level));
+	app->db->setInt(5, pTblData->bySol + (pTblData->fLevel_Up_Sol * level));
+	app->db->setInt(6, pTblData->byEng + (pTblData->fLevel_Up_Eng * level));
 	app->db->setInt(7,  this->plr->pcProfile->charId);
 	app->db->execute();
 
 	app->db->prepare("UPDATE characters SET BaseAttackRate = ?, BaseAttackSpeedRate = ?, BaseEnergyDefence = ?, BaseEnergyOffence = ?,BasePhysicalDefence = ?, BasePhysicalOffence = ? WHERE CharID = ?");
 	app->db->setInt(1, pTblData->wAttack_Rate);
 	app->db->setInt(2, pTblData->wAttack_Speed_Rate);
-	app->db->setInt(3, pTblData->wBasic_Energy_Defence);
-	app->db->setInt(4, pTblData->wBasic_Energy_Offence);
-	app->db->setInt(5, pTblData->wBasic_Physical_Defence);
-	app->db->setInt(6, pTblData->wBasic_Physical_Offence);
+	app->db->setInt(3, pTblData->wBasic_Energy_Defence + (pTblData->byLevel_Up_Energy_Defence * level));
+	app->db->setInt(4, pTblData->wBasic_Energy_Offence + (pTblData->byLevel_Up_Energy_Offence * level));
+	app->db->setInt(5, pTblData->wBasic_Physical_Defence + (pTblData->byLevel_Up_Physical_Defence * level));
+	app->db->setInt(6, pTblData->wBasic_Physical_Offence + (pTblData->byLevel_Up_Physical_Offence * level));
 	app->db->setInt(7,  this->plr->pcProfile->charId);
+	app->db->execute();
+
+	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ? WHERE CharID = ?");
+	app->db->setInt(1, (pTblData->wBasic_LP+1) + (pTblData->byLevel_Up_LP * level));
+	app->db->setInt(2, (pTblData->wBasic_EP+1) + (pTblData->byLevel_Up_EP * level));
+	app->db->setInt(3, pTblData->wBasic_RP + (pTblData->byLevel_Up_RP * level));
+	app->db->setInt(4,  this->plr->pcProfile->charId);
 	app->db->execute();
 }
 void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
@@ -84,7 +91,7 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 
 	CPCTable *pPcTable = app->g_pTableContainer->GetPcTable();
 	sPC_TBLDAT *pTblData = (sPC_TBLDAT*)pPcTable->GetPcTbldat(app->db->getInt("Race"),app->db->getInt("Class"),app->db->getInt("Gender"));
-	CClientSession::CheckPlayerStat(app, pTblData);
+	CClientSession::CheckPlayerStat(app, pTblData, app->db->getInt("Level"));
 	
 	app->db->prepare("SELECT * FROM characters WHERE CharID = ?");
 	app->db->setInt(1,  this->plr->pcProfile->charId);
@@ -103,6 +110,9 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.sPcShape.byHairColor = app->db->getInt("HairColor");
 	res->sPcProfile.sPcShape.bySkinColor = app->db->getInt("SkinColor");
 	//Character Attribute
+	res->sPcProfile.avatarAttribute.wBaseMaxEP = app->db->getInt("BaseMaxEP");
+	res->sPcProfile.avatarAttribute.wBaseMaxLP = app->db->getInt("BaseMaxLP");
+	res->sPcProfile.avatarAttribute.wBaseMaxRP = app->db->getInt("BaseMaxRP");
 	res->sPcProfile.avatarAttribute.byBaseStr = app->db->getInt("BaseStr");
 	res->sPcProfile.avatarAttribute.byBaseCon = app->db->getInt("BaseCon");
 	res->sPcProfile.avatarAttribute.byBaseFoc = app->db->getInt("BaseFoc");

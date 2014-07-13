@@ -115,7 +115,7 @@ public:
 	//Client Packet functions
 	void						SendGameEnterReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app);
-	void						CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData);
+	void						CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, int level);
 	void						SendAvatarItemInfo(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarSkillInfo(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarInfoEnd(CNtlPacket * pPacket);
