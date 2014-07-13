@@ -1140,7 +1140,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 			break;
 		case UG_SHOP_GAMBLE_BUY_REQ:
 		{
-			printf("--- UG_SHOP_GAMBLE_BUY_REQ --- \n");
+			CClientSession::SendGambleBuyReq(pPacket, app);
 		}
 			break;
 		case UG_PARTY_DIFF_CHANGE_REQ:
