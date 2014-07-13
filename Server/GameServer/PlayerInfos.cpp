@@ -189,7 +189,7 @@ void		PlayerInfos::setZero()
 }
 void		PlayerInfos::calculeMyStat(CGameServer * app)
 {
-	app->db->prepare("SELECT * FROM items WHERE owner_ID = ? AND place=7 ORDER BY pos ASC");
+	app->db->prepare("SELECT * FROM items WHERE owner_ID = ? AND place=7");
 	app->db->setInt(1, this->pcProfile->charId);
 	app->db->execute();
 	this->setZero();
@@ -222,7 +222,23 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 		pItemData->byBattle_Attribute;
 		//printf("%d, %d, %d, %d, %d, %d\n", pItemData->dwPhysical_OffenceUpgrade, pItemData->dwPhysical_DefenceUpgrade, pItemData->dwEnergy_OffenceUpgrade, pItemData->dwEnergy_DefenceUpgrade, pItemData->byNeed_Con, pItemData->byNeed_Dex);
 	}
-	this->SaveMe();
+	app->db->prepare("UPDATE characters SET LastAttackSpeedRate = ?, LastEnergyDefence = ?, LastEnergyOffence = ?,LastPhysicalDefence = ?, LastPhysicalOffence = ? WHERE CharID = ?");
+	app->db->setInt(1, this->pcProfile->avatarAttribute.wLastAttackSpeedRate);
+	app->db->setInt(2, this->pcProfile->avatarAttribute.wLastEnergyDefence);
+	app->db->setInt(3,this->pcProfile->avatarAttribute.wLastEnergyOffence);
+	app->db->setInt(4, this->pcProfile->avatarAttribute.wLastPhysicalDefence);
+	app->db->setInt(5, this->pcProfile->avatarAttribute.wLastPhysicalOffence);
+	app->db->setInt(6,  this->pcProfile->charId);
+	app->db->execute();
+	app->db->prepare("UPDATE characters SET LastStr = ?, LastCon = ?, LastFoc = ?, LastDex = ?,LastSol = ?, LastEng = ? WHERE CharID = ?");
+	app->db->setInt(1, this->pcProfile->avatarAttribute.byLastStr);
+	app->db->setInt(2, this->pcProfile->avatarAttribute.byLastCon);
+	app->db->setInt(3, this->pcProfile->avatarAttribute.byLastFoc);
+	app->db->setInt(4, this->pcProfile->avatarAttribute.byLastDex);
+	app->db->setInt(5, this->pcProfile->avatarAttribute.byLastSol);
+	app->db->setInt(6, this->pcProfile->avatarAttribute.byLastEng);
+	app->db->setInt(7,  this->pcProfile->charId);
+	app->db->execute();
 
 	CNtlPacket packet(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
     sGU_AVATAR_ATTRIBUTE_UPDATE * res = (sGU_AVATAR_ATTRIBUTE_UPDATE *)packet.GetPacketData();
