@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SharedType.h"
-
+#include "MobTable.h"
 static RwUInt32 m_uiSerialId = 5;
 static RwUInt32 m_uiTargetSerialId = 0;
 
@@ -38,8 +38,7 @@ public:
 
 	bool						DeleteItemByUIdPlacePos(CNtlPacket * pPacket, CClientSession * pSession, RwUInt32 UniqueID, RwUInt32 Place, RwUInt32 Pos);
 	bool						UpdateCharMoney(CNtlPacket * pPacket, CClientSession * pSession, RwUInt32 ChangeType, RwUInt32 MoneyAmount, RwUInt32 AvatarHandle);
-	
-
+	DWORD						CalculePowerLevel(sMOB_TBLDAT* pMOBtData);
 };
 
 #endif

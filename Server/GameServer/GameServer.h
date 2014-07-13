@@ -115,7 +115,7 @@ public:
 	//Client Packet functions
 	void						SendGameEnterReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app);
-	void						CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData);
+	void						CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, int level);
 	void						SendAvatarItemInfo(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarSkillInfo(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarInfoEnd(CNtlPacket * pPacket);
@@ -146,7 +146,7 @@ public:
 	void						SendCharTargetInfo(CNtlPacket * pPacket);
 	void						SendCharSitDown(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharStandUp(CNtlPacket * pPacket, CGameServer * app);
-	
+	void						SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharFollowMove(CNtlPacket * pPacket, CGameServer * app);
 	void						SendExcuteTriggerObject(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharBindReq(CNtlPacket * pPacket, CGameServer * app);
@@ -208,6 +208,11 @@ public:
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
+	// BANK
+	void						SendBankStartReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendBankEndReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendBankBuyReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app);
 	//Game Server functions
 	sGU_OBJECT_CREATE			characterspawnInfo;
 	//

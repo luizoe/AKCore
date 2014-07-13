@@ -177,3 +177,14 @@ bool	QueryClass::SetMailAccept(RwUInt32 CharID, RwUInt32 MailID)
 
 	return true;
 }
+bool	QueryClass::UpdateSPPoint(RwUInt32 CharID, RwUInt32 point)
+{
+	CGameServer * app = (CGameServer*) NtlSfxGetApp();
+
+	app->db->prepare("UPDATE characters SET SpPoint = ? WHERE CharID=?");
+	app->db->setInt(1, point);
+	app->db->setInt(2, CharID);
+	app->db->execute();
+
+	return true;
+}

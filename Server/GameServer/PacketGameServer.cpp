@@ -39,27 +39,33 @@ void CClientSession::SendGameEnterReq(CNtlPacket * pPacket, CGameServer * app)
 //--------------------------------------------------------------------------------------//
 //		Send avatar char info
 //--------------------------------------------------------------------------------------//
-void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData)
+void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, int level)
 {
-
 	app->db->prepare("UPDATE characters SET BaseStr = ?, BaseCon = ?, BaseFoc = ?, BaseDex = ?,BaseSol = ?, BaseEng = ? WHERE CharID = ?");
-	app->db->setInt(1, pTblData->byStr);
-	app->db->setInt(2, pTblData->byCon);
-	app->db->setInt(3, pTblData->byFoc);
-	app->db->setInt(4, pTblData->byDex);
-	app->db->setInt(5, pTblData->bySol);
-	app->db->setInt(6, pTblData->byEng);
+	app->db->setInt(1, pTblData->byStr + (pTblData->fLevel_Up_Str * level));
+	app->db->setInt(2, pTblData->byCon + (pTblData->fLevel_Up_Con * level));
+	app->db->setInt(3, pTblData->byFoc + (pTblData->fLevel_Up_Foc * level));
+	app->db->setInt(4, pTblData->byDex + (pTblData->fLevel_Up_Dex * level));
+	app->db->setInt(5, pTblData->bySol + (pTblData->fLevel_Up_Sol * level));
+	app->db->setInt(6, pTblData->byEng + (pTblData->fLevel_Up_Eng * level));
 	app->db->setInt(7,  this->plr->pcProfile->charId);
 	app->db->execute();
 
 	app->db->prepare("UPDATE characters SET BaseAttackRate = ?, BaseAttackSpeedRate = ?, BaseEnergyDefence = ?, BaseEnergyOffence = ?,BasePhysicalDefence = ?, BasePhysicalOffence = ? WHERE CharID = ?");
 	app->db->setInt(1, pTblData->wAttack_Rate);
 	app->db->setInt(2, pTblData->wAttack_Speed_Rate);
-	app->db->setInt(3, pTblData->wBasic_Energy_Defence);
-	app->db->setInt(4, pTblData->wBasic_Energy_Offence);
-	app->db->setInt(5, pTblData->wBasic_Physical_Defence);
-	app->db->setInt(6, pTblData->wBasic_Physical_Offence);
+	app->db->setInt(3, pTblData->wBasic_Energy_Defence + (pTblData->byLevel_Up_Energy_Defence * level));
+	app->db->setInt(4, pTblData->wBasic_Energy_Offence + (pTblData->byLevel_Up_Energy_Offence * level));
+	app->db->setInt(5, pTblData->wBasic_Physical_Defence + (pTblData->byLevel_Up_Physical_Defence * level));
+	app->db->setInt(6, pTblData->wBasic_Physical_Offence + (pTblData->byLevel_Up_Physical_Offence * level));
 	app->db->setInt(7,  this->plr->pcProfile->charId);
+	app->db->execute();
+
+	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ? WHERE CharID = ?");
+	app->db->setInt(1, (pTblData->wBasic_LP+1) + (pTblData->byLevel_Up_LP * level));
+	app->db->setInt(2, (pTblData->wBasic_EP+1) + (pTblData->byLevel_Up_EP * level));
+	app->db->setInt(3, pTblData->wBasic_RP + (pTblData->byLevel_Up_RP * level));
+	app->db->setInt(4,  this->plr->pcProfile->charId);
 	app->db->execute();
 }
 void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
@@ -85,7 +91,7 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 
 	CPCTable *pPcTable = app->g_pTableContainer->GetPcTable();
 	sPC_TBLDAT *pTblData = (sPC_TBLDAT*)pPcTable->GetPcTbldat(app->db->getInt("Race"),app->db->getInt("Class"),app->db->getInt("Gender"));
-	CClientSession::CheckPlayerStat(app, pTblData);
+	CClientSession::CheckPlayerStat(app, pTblData, app->db->getInt("Level"));
 	
 	app->db->prepare("SELECT * FROM characters WHERE CharID = ?");
 	app->db->setInt(1,  this->plr->pcProfile->charId);
@@ -104,6 +110,9 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.sPcShape.byHairColor = app->db->getInt("HairColor");
 	res->sPcProfile.sPcShape.bySkinColor = app->db->getInt("SkinColor");
 	//Character Attribute
+	res->sPcProfile.avatarAttribute.wBaseMaxEP = app->db->getInt("BaseMaxEP");
+	res->sPcProfile.avatarAttribute.wBaseMaxLP = app->db->getInt("BaseMaxLP");
+	res->sPcProfile.avatarAttribute.wBaseMaxRP = app->db->getInt("BaseMaxRP");
 	res->sPcProfile.avatarAttribute.byBaseStr = app->db->getInt("BaseStr");
 	res->sPcProfile.avatarAttribute.byBaseCon = app->db->getInt("BaseCon");
 	res->sPcProfile.avatarAttribute.byBaseFoc = app->db->getInt("BaseFoc");
@@ -111,11 +120,8 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.avatarAttribute.byBaseSol = app->db->getInt("BaseSol");
 	res->sPcProfile.avatarAttribute.byBaseEng = app->db->getInt("BaseEng");
 	res->sPcProfile.avatarAttribute.wBaseMaxLP = app->db->getInt("BaseMaxLP");
-	res->sPcProfile.avatarAttribute.wLastMaxLP = app->db->getInt("BaseMaxLP");
 	res->sPcProfile.avatarAttribute.wBaseMaxEP = app->db->getInt("BaseMaxEP");
-	res->sPcProfile.avatarAttribute.wLastMaxEP = app->db->getInt("BaseMaxEP");
 	res->sPcProfile.avatarAttribute.wBaseMaxRP = app->db->getInt("BaseMaxRP");
-	res->sPcProfile.avatarAttribute.wLastMaxRP = app->db->getInt("BaseMaxRP");
 	res->sPcProfile.avatarAttribute.wBasePhysicalOffence = app->db->getInt("BasePhysicalOffence");
 	res->sPcProfile.avatarAttribute.wBasePhysicalDefence = app->db->getInt("BasePhysicalDefence");
 	res->sPcProfile.avatarAttribute.wBaseEnergyOffence = app->db->getInt("BaseEnergyOffence");
@@ -123,10 +129,6 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.avatarAttribute.wBaseAttackRate = app->db->getInt("BaseAttackRate");
 	res->sPcProfile.avatarAttribute.wBaseDodgeRate = app->db->getInt("BaseDodgeRate");
 	res->sPcProfile.avatarAttribute.wBaseBlockRate = app->db->getInt("BaseBlockRate");
-	
-	res->sPcProfile.wCurLP = app->db->getInt("CurLP");
-	res->sPcProfile.wCurEP = app->db->getInt("CurEP");
-	res->sPcProfile.wCurRP = app->db->getInt("CurRP");
 	res->sPcProfile.byLevel = app->db->getInt("Level");
 	res->sPcProfile.dwCurExp = app->db->getInt("Exp");
 	res->sPcProfile.dwMaxExpInThisLevel = app->db->getInt("MaxExpInThisLevel");
@@ -152,10 +154,12 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sCharState.sCharStateBase.aspectState.sAspectStateDetail.sVehicle.idVehicleTblidx = 0;
 	res->wCharStateSize = sizeof(sCHARSTATE_BASE);
 	res->sPcProfile.bIsGameMaster = app->db->getBoolean("GameMaster");
+	
 	this->plr->SetPlayerName(app->db->getString("CharName"));
 	this->plr->SetPosition(res->sCharState.sCharStateBase.vCurLoc, res->sCharState.sCharStateBase.vCurDir);
 	this->plr->setPlayerStat(&res->sPcProfile, &res->sCharState);
 	this->plr->calculeMyStat(app);
+
 	res->sPcProfile.avatarAttribute.byLastCon = app->db->getInt("LastCon");
 	res->sPcProfile.avatarAttribute.byLastStr = app->db->getInt("LastStr");
 	res->sPcProfile.avatarAttribute.byLastFoc = app->db->getInt("LastFoc");
@@ -172,6 +176,13 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.avatarAttribute.wLastPhysicalCriticalRate = app->db->getInt("LastPhysicalCriticalRate");
 	res->sPcProfile.avatarAttribute.wLastEnergyCriticalRate = app->db->getInt("LastEnergyCriticalRate");
 	res->sPcProfile.avatarAttribute.fLastRunSpeed = (float)app->db->getDouble("LastRunSpeed");
+	res->sPcProfile.avatarAttribute.wLastMaxLP = app->db->getInt("LastMaxLP");
+	res->sPcProfile.avatarAttribute.wLastMaxRP = app->db->getInt("LastMaxRP");
+	res->sPcProfile.avatarAttribute.wLastMaxEP = app->db->getInt("LastMaxEP");
+	res->sPcProfile.wCurLP = app->db->getInt("CurLP");
+	res->sPcProfile.wCurEP = app->db->getInt("CurEP");
+	res->sPcProfile.wCurRP = app->db->getInt("CurRP");
+	
 	this->plr->setPlayerStat(&res->sPcProfile, &res->sCharState);
 	packet.SetPacketLen( sizeof(sGU_AVATAR_CHAR_INFO) );
 	int rc = g_pApp->Send( this->GetHandle(), &packet );
@@ -2072,7 +2083,8 @@ void CGameServer::UpdateClient(CNtlPacket * pPacket, CClientSession * pSession)
 // MAKE MOBS MOVE
 	if(timeGetTime() - app->mob->last_mobMove >= MONSTER_MOVE_UPDATE_TICK)
 	{
-	//	app->mob->MonsterRandomWalk(pPacket);
+		/*if ((rand() % 100) >= 60) 
+			app->mob->MonsterRandomWalk(pPacket);*/ // we need replace this shit by -> CMobMovePatternTable
 		app->mob->last_mobMove = timeGetTime();
 	}
 }
@@ -2145,28 +2157,52 @@ void CClientSession::SendCharLearnSkillReq(CNtlPacket * pPacket, CGameServer * a
 						break;
 					}
 
-					if(req0->byPos == j){
+					if(req0->byPos == j)
+					{
 						sSKILL_TBLDAT* pSkillData = (sSKILL_TBLDAT*) pSkillTable->FindData( pMerchantData->aitem_Tblidx[j] );
-					  if(app->qry->CheckIfSkillAlreadyLearned(pSkillData->tblidx, this->plr->pcProfile->charId) == false){
-						if(this->plr->pcProfile->dwZenny >= pSkillData->dwRequire_Zenny){
-							if(this->plr->pcProfile->byLevel >= pSkillData->byRequire_Train_Level){
-								if(this->plr->pcProfile->dwSpPoint >= pSkillData->wRequireSP){
-									skill_learn_result = 500;
-									// Skill learned notification
-									CNtlPacket packet2(sizeof(sGU_SKILL_LEARNED_NFY));
-									sGU_SKILL_LEARNED_NFY * res2 = (sGU_SKILL_LEARNED_NFY *)packet2.GetPacketData();
+						if(app->qry->CheckIfSkillAlreadyLearned(pSkillData->tblidx, this->plr->pcProfile->charId) == false)
+						{
+							if(this->plr->pcProfile->dwZenny >= pSkillData->dwRequire_Zenny)
+							{
+								if(this->plr->pcProfile->byLevel >= pSkillData->byRequire_Train_Level)
+								{
+									if(this->plr->pcProfile->dwSpPoint >= pSkillData->wRequireSP)
+									{
+										skill_learn_result = 500;
+										// Skill learned notification
+										CNtlPacket packet2(sizeof(sGU_SKILL_LEARNED_NFY));
+										sGU_SKILL_LEARNED_NFY * res2 = (sGU_SKILL_LEARNED_NFY *)packet2.GetPacketData();
 
-									res2->wOpCode = GU_SKILL_LEARNED_NFY;
-									res2->skillId = pSkillData->tblidx;
-									res2->bySlot = pSkillData->bySlot_Index;
+										res2->wOpCode = GU_SKILL_LEARNED_NFY;
+										res2->skillId = pSkillData->tblidx;
+										res2->bySlot = pSkillData->bySlot_Index;
 
-									app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, pSkillData->wNext_Skill_Train_Exp);
-									this->plr->pcProfile->dwZenny -= pSkillData->dwRequire_Zenny;
-									this->plr->pcProfile->dwSpPoint -= pSkillData->wRequireSP;
+										app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, pSkillData->wNext_Skill_Train_Exp);
+										this->plr->pcProfile->dwZenny -= pSkillData->dwRequire_Zenny;
+										this->plr->pcProfile->dwSpPoint -= pSkillData->wRequireSP;
 
-									packet2.SetPacketLen( sizeof(sGU_SKILL_LEARNED_NFY) );
-									g_pApp->Send( this->GetHandle() , &packet2 );
-									break;
+										packet2.SetPacketLen( sizeof(sGU_SKILL_LEARNED_NFY) );
+										g_pApp->Send( this->GetHandle() , &packet2 );
+										app->qry->UpdateSPPoint(this->plr->pcProfile->charId, this->plr->pcProfile->dwSpPoint);
+										
+										CNtlPacket packet3(sizeof(sGU_UPDATE_CHAR_SP));
+ 										sGU_UPDATE_CHAR_SP * res3 = (sGU_UPDATE_CHAR_SP *)packet3.GetPacketData();
+ 										res3->wOpCode = GU_UPDATE_CHAR_SP;
+ 										res3->dwSpPoint = this->plr->pcProfile->dwSpPoint;
+ 										packet3.SetPacketLen(sizeof(sGU_UPDATE_CHAR_SP));
+ 										g_pApp->Send(this->GetHandle(), &packet3);
+
+										app->qry->SetMinusMoney(this->plr->pcProfile->charId, pSkillData->dwRequire_Zenny);
+										CNtlPacket packet4(sizeof(sGU_UPDATE_CHAR_ZENNY));
+										sGU_UPDATE_CHAR_ZENNY * res4 = (sGU_UPDATE_CHAR_ZENNY *)packet4.GetPacketData();
+										res4->bIsNew = true;
+										res4->byChangeType = 0;
+										res4->dwZenny = this->plr->pcProfile->dwZenny;
+										res4->handle = this->GetavatarHandle();
+										res4->wOpCode = GU_UPDATE_CHAR_ZENNY;
+										packet4.SetPacketLen(sizeof(sGU_UPDATE_CHAR_ZENNY));
+ 										g_pApp->Send(this->GetHandle(), &packet4);
+										break;
 								}else
 								skill_learn_result = 645;
 								break;
@@ -2225,7 +2261,7 @@ void CClientSession::SendItemMoveReq(CNtlPacket * pPacket, CGameServer * app)
 	} 
 	else 
 	{
-		if (req->byDestPlace == 7)
+		if (req->byDestPlace == 7 || req->bySrcPlace == 7)
 		{
 			CItemTable *itemTbl = app->g_pTableContainer->GetItemTable();
 			sITEM_TBLDAT* pItemData = (sITEM_TBLDAT*) itemTbl->FindData(ID);
@@ -2233,6 +2269,7 @@ void CClientSession::SendItemMoveReq(CNtlPacket * pPacket, CGameServer * app)
 			{
 				res->wResultCode = GAME_SUCCESS;
 				app->qry->UpdateItemPlaceAndPos(uniqueID, req->byDestPlace, req->byDestPos);
+				this->plr->calculeMyStat(app);
 			}
 			else
 			{
@@ -2254,7 +2291,6 @@ void CClientSession::SendItemMoveReq(CNtlPacket * pPacket, CGameServer * app)
 	res->byDestPos = req->byDestPos;
 	packet.SetPacketLen(sizeof(sGU_ITEM_MOVE_RES));
 	g_pApp->Send( this->GetHandle() , &packet );
-	this->plr->calculeMyStat(app);
 }
 
 //--------------------------------------------------------------------------------------//
@@ -2598,23 +2634,23 @@ void	CClientSession::SendScouterIndicatorReq(CNtlPacket * pPacket, CGameServer *
 		res->hTarget = req->hTarget;
 		res->dwRetValue = 0;
 		res->wOpCode = GU_SCOUTER_INDICATOR_RES;
-		res->wResultCode = GAME_SUCCESS;
-		
+
 		CMobTable *Mob = app->g_pTableContainer->GetMobTable();
 		for ( CTable::TABLEIT itmob = Mob->Begin(); itmob != Mob->End(); ++itmob )
 		{
 			sMOB_TBLDAT* pMOBtData = (sMOB_TBLDAT*) itmob->second;
 			if (pMOBtData->tblidx == mobid)
 			{
-				CFormulaTable *form = app->g_pTableContainer->GetFormulaTable();
-				for ( CTable::TABLEIT itfor = form->Begin(); itfor != form->End(); ++itfor )
-				{
-					sFORMULA_TBLDAT *formtbl = (sFORMULA_TBLDAT*) itmob->second;
-					float lolilol = formtbl->afRate[0];
-				}
+				res->dwRetValue = this->gsf->CalculePowerLevel(pMOBtData);
+				res->wResultCode = GAME_SUCCESS;
+				break;
 			}
+			else
+				res->wResultCode = GAME_FAIL;
 		}
 	}
+	packet.SetPacketLen( sizeof(sGU_SCOUTER_INDICATOR_RES) );
+	g_pApp->Send( this->GetHandle() , &packet );
 }
 void	CClientSession::SendDragonBallCheckReq(CNtlPacket * pPacket, CGameServer * app) // THIS IS THE FIRST VERSION
 {
@@ -2750,7 +2786,7 @@ void CClientSession::SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app
 void CClientSession::SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app)
 {
 	printf("--- UG_SHOP_GAMBLE_BUY_REQ --- \n");
-	sUG_SHOP_GAMBLE_BUY_REQ *req = (sUG_SHOP_GAMBLE_BUY_REQ*)pPacket->GetPacketData();
+/*	sUG_SHOP_GAMBLE_BUY_REQ *req = (sUG_SHOP_GAMBLE_BUY_REQ*)pPacket->GetPacketData();
 	CNtlPacket packet(sizeof(sGU_SHOP_GAMBLE_BUY_RES));
 	sGU_SHOP_GAMBLE_BUY_RES * res = (sGU_SHOP_GAMBLE_BUY_RES *)packet.GetPacketData();
 
@@ -2762,8 +2798,108 @@ void CClientSession::SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app)
 	for ( CTable::TABLEIT itmob = mudo->Begin(); itmob != mudo->End(); ++itmob )
 	{
 		sITEM_MIX_MACHINE_TBLDAT* pMusoData = (sITEM_MIX_MACHINE_TBLDAT*) itmob->second;
-		
+		res->hItem = pMusoData->aBuiltInRecipeTblidx[0];
 	}
 	packet.SetPacketLen(sizeof(sGU_SHOP_GAMBLE_BUY_RES));
-	int rc = g_pApp->Send(this->GetHandle(), &packet);
+	int rc = g_pApp->Send(this->GetHandle(), &packet);*/
+}
+//------------------------------------------------
+// Character Skill Upgrade By luiz45
+//------------------------------------------------
+void CClientSession::SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app)
+{
+	//Upgrading Process
+	sUG_SKILL_UPGRADE_REQ * req = (sUG_SKILL_UPGRADE_REQ*)pPacket->GetPacketData();
+	CSkillTable* pSkillTable = app->g_pTableContainer->GetSkillTable();
+	
+	app->db->prepare("SELECT * FROM skills WHERE owner_id=? AND SlotID = ? ");
+	app->db->setInt(1, this->plr->pcProfile->charId);
+	app->db->setInt(2, req->bySlotIndex);
+	app->db->execute();
+	app->db->fetch();
+
+	int skillID = app->db->getInt("skill_id");
+	sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skillID));
+ 	
+ 	if (pSkillData->dwNextSkillTblidx)
+ 	{
+ 		CNtlPacket packet(sizeof(sGU_SKILL_UPGRADE_RES));
+ 		sGU_SKILL_UPGRADE_RES * res = (sGU_SKILL_UPGRADE_RES *)packet.GetPacketData();
+ 		
+ 		CNtlPacket packet2(sizeof(sGU_UPDATE_CHAR_SP));
+ 		sGU_UPDATE_CHAR_SP * res2 = (sGU_UPDATE_CHAR_SP *)packet2.GetPacketData();
+ 
+ 		res->wOpCode = GU_SKILL_UPGRADE_RES;
+ 		res->wResultCode = GAME_SUCCESS;
+ 		res->skillId = pSkillData->dwNextSkillTblidx;
+ 		res->bySlot = pSkillData->bySlot_Index;		
+ 		packet.SetPacketLen(sizeof(sGU_SKILL_UPGRADE_RES));
+ 		g_pApp->Send(this->GetHandle(), &packet);
+ 		//Skill Level(ID)
+ 		app->db->prepare("UPDATE skills SET skill_id=? WHERE owner_id=? AND skill_id=?");
+ 		app->db->setInt(1, pSkillData->dwNextSkillTblidx);
+ 		app->db->setInt(2, this->plr->pcProfile->charId);
+ 		app->db->setInt(3, skillID);
+ 		app->db->execute();
+ 
+ 		//Update player's SP
+		this->plr->pcProfile->dwSpPoint -= 1;
+		app->qry->UpdateSPPoint(this->plr->pcProfile->charId, this->plr->pcProfile->dwSpPoint);
+ 
+ 		//Send a response to client to get Update SP OK
+ 		res2->wOpCode = GU_UPDATE_CHAR_SP;
+ 		res2->dwSpPoint = this->plr->pcProfile->dwSpPoint;
+ 		
+ 		packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_SP));
+ 		g_pApp->Send(this->GetHandle(), &packet2);
+	}
+}
+void		CClientSession::SendBankStartReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_BANK_START_REQ * req = (sUG_BANK_START_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_BANK_START_RES));
+	sGU_BANK_START_RES * res = (sGU_BANK_START_RES *)packet.GetPacketData();
+
+	res->handle = req->handle;
+	res->wOpCode = GU_BANK_START_RES;
+	res->wResultCode = GAME_SUCCESS;
+
+	packet.SetPacketLen(sizeof(sGU_BANK_START_RES));
+	g_pApp->Send(this->GetHandle(), &packet);
+}
+void		CClientSession::SendBankEndReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	CNtlPacket packet(sizeof(sGU_BANK_END_RES));
+	sGU_BANK_END_RES * res = (sGU_BANK_END_RES *)packet.GetPacketData();
+
+	res->wOpCode = GU_BANK_END_RES;
+	res->wResultCode = GAME_SUCCESS;
+
+	packet.SetPacketLen(sizeof(sGU_BANK_END_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet);
+}
+void		CClientSession::SendBankBuyReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_BANK_BUY_REQ * req = (sUG_BANK_BUY_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_BANK_BUY_RES));
+	sGU_BANK_BUY_RES * res = (sGU_BANK_BUY_RES *)packet.GetPacketData();
+
+	res->hItemhandle;
+	res->hNpchandle;
+	res->sData;
+	res->wOpCode = GU_BANK_BUY_RES;
+	res->wResultCode = GAME_SUCCESS;
+}
+void	CClientSession::SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_BANK_LOAD_REQ * req = (sUG_BANK_LOAD_REQ*)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_BANK_LOAD_RES));
+	sGU_BANK_LOAD_RES * res = (sGU_BANK_LOAD_RES *)packet.GetPacketData();
+
+	res->handle = req->handle;
+	res->wOpCode = GU_BANK_LOAD_RES;
+	res->wResultCode = GAME_SUCCESS;
+	
+	packet.SetPacketLen(sizeof(sGU_BANK_LOAD_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet);
 }
