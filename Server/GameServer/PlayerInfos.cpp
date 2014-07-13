@@ -186,6 +186,20 @@ void		PlayerInfos::setZero()
 	this->pcProfile->avatarAttribute.byLastFoc = this->pcProfile->avatarAttribute.byBaseFoc;
 	this->pcProfile->avatarAttribute.byLastSol = this->pcProfile->avatarAttribute.byBaseSol;
 	this->pcProfile->avatarAttribute.byLastStr = this->pcProfile->avatarAttribute.byBaseStr;
+
+	this->pcProfile->wCurLP = 100;
+	this->pcProfile->avatarAttribute.wBaseMaxLP = 100;
+	this->pcProfile->avatarAttribute.wLastMaxRP = this->pcProfile->wCurLP;
+}
+void		test(BYTE byAttributeTotalCount, void* pvRawData, sAVATAR_ATTRIBUTE* pAttributeData)
+{
+	BYTE* pbyCurrentPosition = (BYTE*)pvRawData;
+	BYTE* pbyAttributeData = (BYTE*)pAttributeData;
+
+	for (int i = 0; i != byAttributeTotalCount; i++)
+	{
+		pbyCurrentPosition[i] = pbyAttributeData[i];
+	}
 }
 void		PlayerInfos::calculeMyStat(CGameServer * app)
 {
@@ -230,6 +244,7 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 	app->db->setInt(5, this->pcProfile->avatarAttribute.wLastPhysicalOffence);
 	app->db->setInt(6,  this->pcProfile->charId);
 	app->db->execute();
+
 	app->db->prepare("UPDATE characters SET LastStr = ?, LastCon = ?, LastFoc = ?, LastDex = ?,LastSol = ?, LastEng = ? WHERE CharID = ?");
 	app->db->setInt(1, this->pcProfile->avatarAttribute.byLastStr);
 	app->db->setInt(2, this->pcProfile->avatarAttribute.byLastCon);
@@ -239,22 +254,12 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 	app->db->setInt(6, this->pcProfile->avatarAttribute.byLastEng);
 	app->db->setInt(7,  this->pcProfile->charId);
 	app->db->execute();
-
 	CNtlPacket packet(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
     sGU_AVATAR_ATTRIBUTE_UPDATE * res = (sGU_AVATAR_ATTRIBUTE_UPDATE *)packet.GetPacketData();
-	res->abyFlexibleField[34] = this->pcProfile->avatarAttribute.wLastPhysicalOffence;
-	res->abyFlexibleField[36] = this->pcProfile->avatarAttribute.wLastPhysicalDefence;
-	res->abyFlexibleField[38] = this->pcProfile->avatarAttribute.wLastEnergyOffence;
-	res->abyFlexibleField[40] = this->pcProfile->avatarAttribute.wLastEnergyDefence;
-	res->abyFlexibleField[57] = this->pcProfile->avatarAttribute.wLastAttackSpeedRate;
-	res->abyFlexibleField[59] = this->pcProfile->avatarAttribute.fLastAttackRange;
-	res->abyFlexibleField[3] = this->pcProfile->avatarAttribute.byLastCon;
-	res->abyFlexibleField[7] = this->pcProfile->avatarAttribute.byLastDex;
-	res->abyFlexibleField[11] = this->pcProfile->avatarAttribute.byLastEng;
-	res->abyFlexibleField[5] = this->pcProfile->avatarAttribute.byLastFoc;
-	res->abyFlexibleField[9] = this->pcProfile->avatarAttribute.byLastSol;
-	res->abyFlexibleField[1] = this->pcProfile->avatarAttribute.byLastStr;
-	res->byAttributeTotalCount = ((UCHAR_MAX - 1) / 8 + 1) + sizeof(sAVATAR_ATTRIBUTE);
+
+	test(101, &res->abyFlexibleField, &this->pcProfile->avatarAttribute);
+
+	res->byAttributeTotalCount = 100;
 	res->hHandle = this->avatarHandle;
 	res->wOpCode = GU_AVATAR_ATTRIBUTE_UPDATE;
 	packet.SetPacketLen(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
