@@ -1625,6 +1625,7 @@ int GameServerMain(int argc, _TCHAR* argv[])
 
 	// NEW CLASS
 	app.mob = new MobActivity();
+	app.plr = new PlayerInfos();
 
 	app.Start();
 	Sleep(500);

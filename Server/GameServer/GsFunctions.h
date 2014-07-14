@@ -14,9 +14,17 @@ typedef struct _SBattleData
 	DWORD				dwCurrTime;
 }SBattleData;
 
+typedef struct _SSkillData
+{
+	RwUInt32			pCharSkillTarget;
+	RwUInt32			m_uiSkillTblId;
+	RwUInt32			m_bySkillActiveType;
+	DWORD				m_uiSkillTime;
+}SSkillData;
 
 #define MONSTER_ATTACK_UPDATE_TICK		2000
-
+#define SKILL_TYPE_CASTING				1
+#define SKILL_TYPE_NONE					0
 
 static RwUInt32 m_iCurrentHp		=		10000;
 

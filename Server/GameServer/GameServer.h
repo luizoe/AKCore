@@ -206,6 +206,7 @@ public:
 	// SKILL
 	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
+	void						SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app);
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	// BANK
@@ -468,6 +469,7 @@ public:
 	MySQLConnWrapper			*db;
 	MobActivity					*mob;
 	QueryClass					*qry;
+	PlayerInfos					*plr;
 public:
 	void						UpdateClient(CNtlPacket * pPacket, CClientSession *	pSession);
 	CNtlPacket *				pPacket;
