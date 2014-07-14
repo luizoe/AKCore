@@ -63,8 +63,8 @@ void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, in
 	app->db->execute();
 
 	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ? WHERE CharID = ?");
-	app->db->setInt(1, (pTblData->wBasic_LP+1) + (pTblData->byLevel_Up_LP * level));
-	app->db->setInt(2, (pTblData->wBasic_EP+1) + (pTblData->byLevel_Up_EP * level));
+	app->db->setInt(1, (pTblData->wBasic_LP) + (pTblData->byLevel_Up_LP * level));
+	app->db->setInt(2, (pTblData->wBasic_EP) + (pTblData->byLevel_Up_EP * level));
 	app->db->setInt(3, pTblData->wBasic_RP + (pTblData->byLevel_Up_RP * level));
 	app->db->setInt(4,  this->plr->pcProfile->charId);
 	app->db->execute();

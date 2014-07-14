@@ -469,7 +469,6 @@ public:
 	MySQLConnWrapper			*db;
 	MobActivity					*mob;
 	QueryClass					*qry;
-	PlayerInfos					*plr;
 public:
 	void						UpdateClient(CNtlPacket * pPacket, CClientSession *	pSession);
 	CNtlPacket *				pPacket;

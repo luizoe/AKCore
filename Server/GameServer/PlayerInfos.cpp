@@ -170,7 +170,17 @@ void		PlayerInfos::SaveMe()
 	//this->SaveItems();
 	//this->SaveSkills();
 }
+void		test(BYTE byAttributeTotalCount, void* pvRawData, sAVATAR_ATTRIBUTE* pAttributeData)
+{
+	BYTE* pbyCurrentPosition = (BYTE*)pvRawData;
+	BYTE* pbyAttributeData = (BYTE*)pAttributeData;
 
+	for (int i = 0; i != byAttributeTotalCount; i++)
+	{
+		if (pbyCurrentPosition[i] != pbyAttributeData[i])
+			pbyCurrentPosition[i] = pbyAttributeData[i];
+	}
+}
 void		PlayerInfos::setZero()
 {
 	this->pcProfile->avatarAttribute.wLastPhysicalOffence = this->pcProfile->avatarAttribute.wBasePhysicalOffence;
@@ -191,16 +201,7 @@ void		PlayerInfos::setZero()
 	this->pcProfile->avatarAttribute.wLastMaxEP = this->pcProfile->avatarAttribute.wBaseMaxEP;
 	this->pcProfile->wCurLP = this->pcProfile->avatarAttribute.wLastMaxLP = this->pcProfile->avatarAttribute.wBaseMaxLP;
 }
-void		test(BYTE byAttributeTotalCount, void* pvRawData, sAVATAR_ATTRIBUTE* pAttributeData)
-{
-	BYTE* pbyCurrentPosition = (BYTE*)pvRawData;
-	BYTE* pbyAttributeData = (BYTE*)pAttributeData;
 
-	for (int i = 0; i != byAttributeTotalCount; i++)
-	{
-		pbyCurrentPosition[i] = pbyAttributeData[i];
-	}
-}
 void		PlayerInfos::calculeMyStat(CGameServer * app)
 {
 	app->db->prepare("SELECT * FROM items WHERE owner_ID = ? AND place=7");
