@@ -174,11 +174,10 @@ void		test(BYTE byAttributeTotalCount, void* pvRawData, sAVATAR_ATTRIBUTE* pAttr
 {
 	BYTE* pbyCurrentPosition = (BYTE*)pvRawData;
 	BYTE* pbyAttributeData = (BYTE*)pAttributeData;
-
-	for (int i = 0; i != byAttributeTotalCount; i++)
+	for (int i = 0; i <=byAttributeTotalCount; i++)
 	{
-		if (pbyCurrentPosition[i] != pbyAttributeData[i])
-			pbyCurrentPosition[i] = pbyAttributeData[i];
+		pbyCurrentPosition[i] = pbyAttributeData[i];
+		printf("pbyCurrentPosition[%d] = %d\n", i, pbyCurrentPosition[i]);
 	}
 }
 void		PlayerInfos::setZero()
@@ -200,6 +199,17 @@ void		PlayerInfos::setZero()
 	this->pcProfile->avatarAttribute.wLastMaxRP = this->pcProfile->avatarAttribute.wLastMaxRP;
 	this->pcProfile->avatarAttribute.wLastMaxEP = this->pcProfile->avatarAttribute.wBaseMaxEP;
 	this->pcProfile->wCurLP = this->pcProfile->avatarAttribute.wLastMaxLP = this->pcProfile->avatarAttribute.wBaseMaxLP;
+
+	this->pcProfile->avatarAttribute.wLastBlockRate = this->pcProfile->avatarAttribute.wBaseBlockRate;
+	this->pcProfile->avatarAttribute.wLastAttackRate = this->pcProfile->avatarAttribute.wBaseAttackRate;
+	this->pcProfile->avatarAttribute.wLastDodgeRate = this->pcProfile->avatarAttribute.wBaseDodgeRate;
+
+	this->pcProfile->avatarAttribute.wLastEnergyCriticalRate = 1;
+	this->pcProfile->avatarAttribute.fEnergyCriticalDamageBonusRate = 1;
+	this->pcProfile->avatarAttribute.fPhysicalCriticalDamageBonusRate = 1;
+
+	this->pcProfile->avatarAttribute.wLastEnergyCriticalRate = this->pcProfile->avatarAttribute.wBaseEnergyCriticalRate;
+	this->pcProfile->avatarAttribute.wLastPhysicalCriticalRate = this->pcProfile->avatarAttribute.wBasePhysicalCriticalRate;
 }
 
 void		PlayerInfos::calculeMyStat(CGameServer * app)
@@ -235,7 +245,6 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 		pItemData->byNeed_Con;
 		pItemData->byNeed_Dex;
 		pItemData->byBattle_Attribute;
-		//printf("%d, %d, %d, %d, %d, %d\n", pItemData->dwPhysical_OffenceUpgrade, pItemData->dwPhysical_DefenceUpgrade, pItemData->dwEnergy_OffenceUpgrade, pItemData->dwEnergy_DefenceUpgrade, pItemData->byNeed_Con, pItemData->byNeed_Dex);
 	}
 	app->db->prepare("UPDATE characters SET LastAttackSpeedRate = ?, LastEnergyDefence = ?, LastEnergyOffence = ?,LastPhysicalDefence = ?, LastPhysicalOffence = ? WHERE CharID = ?");
 	app->db->setInt(1, this->pcProfile->avatarAttribute.wLastAttackSpeedRate);
@@ -256,19 +265,20 @@ void		PlayerInfos::calculeMyStat(CGameServer * app)
 	app->db->setInt(7,  this->pcProfile->charId);
 	app->db->execute();
 
-	app->db->prepare("UPDATE characters SET LastMaxLP = ?, LastMaxEP = ?, LastMaxRP = ? WHERE CharID = ?");
+	app->db->prepare("UPDATE characters SET LastMaxLP = ?, LastMaxEP = ?, LastMaxRP = ?, LastPhysicalCriticalRate = ?, LastEnergyCriticalRate = ? WHERE CharID = ?");
 	app->db->setInt(1, this->pcProfile->avatarAttribute.wLastMaxLP);
 	app->db->setInt(2, this->pcProfile->avatarAttribute.wLastMaxEP);
 	app->db->setInt(3, this->pcProfile->avatarAttribute.wLastMaxRP);
-	app->db->setInt(4,  this->pcProfile->charId);
+	app->db->setInt(4, this->pcProfile->avatarAttribute.wLastPhysicalCriticalRate);
+	app->db->setInt(5, this->pcProfile->avatarAttribute.wLastEnergyCriticalRate);
+	app->db->setInt(6,  this->pcProfile->charId);
 	app->db->execute();
 
 	CNtlPacket packet(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));
     sGU_AVATAR_ATTRIBUTE_UPDATE * res = (sGU_AVATAR_ATTRIBUTE_UPDATE *)packet.GetPacketData();
 
 	test(101, &res->abyFlexibleField, &this->pcProfile->avatarAttribute);
-
-	res->byAttributeTotalCount = 100;
+	res->byAttributeTotalCount = 101;
 	res->hHandle = this->avatarHandle;
 	res->wOpCode = GU_AVATAR_ATTRIBUTE_UPDATE;
 	packet.SetPacketLen(sizeof(sGU_AVATAR_ATTRIBUTE_UPDATE));

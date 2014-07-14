@@ -62,11 +62,16 @@ void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, in
 	app->db->setInt(7,  this->plr->pcProfile->charId);
 	app->db->execute();
 
-	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ? WHERE CharID = ?");
+	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ?, BaseDodgeRate = ?, BaseAttackRate = ?, BaseBlockRate = ?, BasePhysicalCriticalRate = ?, BaseEnergyCriticalRate = ? WHERE CharID = ?");
 	app->db->setInt(1, (pTblData->wBasic_LP) + (pTblData->byLevel_Up_LP * level));
 	app->db->setInt(2, (pTblData->wBasic_EP) + (pTblData->byLevel_Up_EP * level));
 	app->db->setInt(3, pTblData->wBasic_RP + (pTblData->byLevel_Up_RP * level));
-	app->db->setInt(4,  this->plr->pcProfile->charId);
+	app->db->setInt(4, pTblData->wDodge_Rate);
+	app->db->setInt(5, pTblData->wAttack_Rate);
+	app->db->setInt(6, pTblData->wBlock_Rate);
+	app->db->setInt(7, 10);
+	app->db->setInt(8, 10);
+	app->db->setInt(9,  this->plr->pcProfile->charId);
 	app->db->execute();
 }
 void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
@@ -93,7 +98,7 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	CPCTable *pPcTable = app->g_pTableContainer->GetPcTable();
 	sPC_TBLDAT *pTblData = (sPC_TBLDAT*)pPcTable->GetPcTbldat(app->db->getInt("Race"),app->db->getInt("Class"),app->db->getInt("Gender"));
 	CClientSession::CheckPlayerStat(app, pTblData, app->db->getInt("Level"));
-	
+
 	app->db->prepare("SELECT * FROM characters WHERE CharID = ?");
 	app->db->setInt(1,  this->plr->pcProfile->charId);
 	app->db->execute();
@@ -130,11 +135,14 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.avatarAttribute.wBaseAttackRate = app->db->getInt("BaseAttackRate");
 	res->sPcProfile.avatarAttribute.wBaseDodgeRate = app->db->getInt("BaseDodgeRate");
 	res->sPcProfile.avatarAttribute.wBaseBlockRate = app->db->getInt("BaseBlockRate");
+	res->sPcProfile.avatarAttribute.wBasePhysicalCriticalRate = app->db->getInt("BasePhysicalCriticalRate");
+	res->sPcProfile.avatarAttribute.wBaseEnergyCriticalRate = app->db->getInt("BaseEnergyCriticalRate");
 	res->sPcProfile.byLevel = app->db->getInt("Level");
 	res->sPcProfile.dwCurExp = app->db->getInt("Exp");
 	res->sPcProfile.dwMaxExpInThisLevel = app->db->getInt("MaxExpInThisLevel");
 	res->sPcProfile.dwZenny = app->db->getInt("Money");
-	res->sPcProfile.dwTutorialHint = 0;
+	res->sPcProfile.dwTutorialHint = -1;
+	//res->sPcProfile.byBindType = DBO_BIND_TYPE_INITIAL_LOCATION;
 	res->sPcProfile.dwReputation = app->db->getInt("Reputation");
 	res->sPcProfile.dwMudosaPoint = app->db->getInt("MudosaPoint");
 	res->sPcProfile.dwSpPoint = app->db->getInt("SpPoint");
@@ -183,7 +191,6 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.wCurLP = app->db->getInt("CurLP");
 	res->sPcProfile.wCurEP = app->db->getInt("CurEP");
 	res->sPcProfile.wCurRP = app->db->getInt("CurRP");
-	
 	this->plr->setPlayerStat(&res->sPcProfile, &res->sCharState);
 	packet.SetPacketLen( sizeof(sGU_AVATAR_CHAR_INFO) );
 	int rc = g_pApp->Send( this->GetHandle(), &packet );
