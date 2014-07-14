@@ -147,6 +147,8 @@ public:
 	void						SendCharSitDown(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharStandUp(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app);
+	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);
+	void						SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharFollowMove(CNtlPacket * pPacket, CGameServer * app);
 	void						SendExcuteTriggerObject(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharBindReq(CNtlPacket * pPacket, CGameServer * app);
@@ -206,6 +208,7 @@ public:
 	// SKILL
 	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
+	void						SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app);
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	// BANK

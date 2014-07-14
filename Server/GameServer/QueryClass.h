@@ -18,6 +18,7 @@ public:
 public:
 
 	bool						InsertNewSkill(TBLIDX SkillID, int CharID, BYTE SlotID, WORD Time, WORD Exp);
+	bool						InsertRemoveQuickSlot(TBLIDX SkillID, BYTE SlotID, int CharID);
 	bool						CheckIfSkillAlreadyLearned(TBLIDX SkillID, int CharID);
 	bool						DeleteItemById(TBLIDX ItemID);
 	bool						CheckIfCanMoveItemThere(RwUInt32 CharID, BYTE Place, BYTE Pos);

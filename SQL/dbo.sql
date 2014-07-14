@@ -276,6 +276,63 @@ CREATE TABLE `portals` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
+-- Table structure for quickslot
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `quickslot` (
+  `pkQuick` int(15) NOT NULL AUTO_INCREMENT,
+  `charId` int(11) DEFAULT NULL,
+  `slotId_0` int(10) unsigned DEFAULT '0',
+  `slotId_1` int(10) unsigned DEFAULT '0',
+  `slotId_2` int(10) unsigned DEFAULT '0',
+  `slotId_3` int(10) unsigned DEFAULT '0',
+  `slotId_4` int(10) unsigned DEFAULT '0',
+  `slotId_5` int(10) unsigned DEFAULT '0',
+  `slotId_6` int(10) unsigned DEFAULT '0',
+  `slotId_7` int(10) unsigned DEFAULT '0',
+  `slotId_8` int(10) unsigned DEFAULT '0',
+  `slotId_9` int(10) unsigned DEFAULT '0',
+  `slotId_10` int(10) unsigned DEFAULT '0',
+  `slotId_11` int(10) unsigned DEFAULT '0',
+  `slotId_12` int(10) unsigned DEFAULT '0',
+  `slotId_13` int(10) unsigned DEFAULT '0',
+  `slotId_14` int(10) unsigned DEFAULT '0',
+  `slotId_15` int(10) unsigned DEFAULT '0',
+  `slotId_16` int(10) unsigned DEFAULT '0',
+  `slotId_17` int(10) unsigned DEFAULT '0',
+  `slotId_18` int(10) unsigned DEFAULT '0',
+  `slotId_19` int(10) unsigned DEFAULT '0',
+  `slotId_20` int(10) unsigned DEFAULT '0',
+  `slotId_21` int(10) unsigned DEFAULT '0',
+  `slotId_22` int(10) unsigned DEFAULT '0',
+  `slotId_23` int(10) unsigned DEFAULT '0',
+  `slotId_24` int(10) unsigned DEFAULT '0',
+  `slotId_25` int(10) unsigned DEFAULT '0',
+  `slotId_26` int(10) unsigned DEFAULT '0',
+  `slotId_27` int(10) unsigned DEFAULT '0',
+  `slotId_28` int(10) unsigned DEFAULT '0',
+  `slotId_29` int(10) unsigned DEFAULT '0',
+  `slotId_30` int(10) unsigned DEFAULT '0',
+  `slotId_31` int(10) unsigned DEFAULT '0',
+  `slotId_32` int(10) unsigned DEFAULT '0',
+  `slotId_34` int(10) unsigned DEFAULT '0',
+  `slotId_35` int(10) unsigned DEFAULT '0',
+  `slotId_36` int(10) unsigned DEFAULT '0',
+  `slotId_37` int(10) unsigned DEFAULT '0',
+  `slotId_38` int(10) unsigned DEFAULT '0',
+  `slotId_39` int(10) unsigned DEFAULT '0',
+  `slotId_40` int(10) unsigned DEFAULT '0',
+  `slotId_41` int(10) unsigned DEFAULT '0',
+  `slotId_42` int(10) unsigned DEFAULT '0',
+  `slotId_43` int(10) unsigned DEFAULT '0',
+  `slotId_44` int(10) unsigned DEFAULT '0',
+  `slotId_45` int(10) unsigned DEFAULT '0',
+  `slotId_46` int(10) unsigned DEFAULT '0',
+  `slotId_47` int(10) unsigned DEFAULT '0',
+  PRIMARY KEY (`pkQuick`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+
+
+-- ----------------------------
 -- Table structure for skills
 -- ----------------------------
 CREATE TABLE `skills` (
