@@ -62,11 +62,16 @@ void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, in
 	app->db->setInt(7,  this->plr->pcProfile->charId);
 	app->db->execute();
 
-	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ? WHERE CharID = ?");
-	app->db->setInt(1, (pTblData->wBasic_LP+1) + (pTblData->byLevel_Up_LP * level));
-	app->db->setInt(2, (pTblData->wBasic_EP+1) + (pTblData->byLevel_Up_EP * level));
+	app->db->prepare("UPDATE characters SET BaseMaxLP = ?, BaseMaxEP = ?, BaseMaxRP = ?, BaseDodgeRate = ?, BaseAttackRate = ?, BaseBlockRate = ?, BasePhysicalCriticalRate = ?, BaseEnergyCriticalRate = ? WHERE CharID = ?");
+	app->db->setInt(1, (pTblData->wBasic_LP) + (pTblData->byLevel_Up_LP * level));
+	app->db->setInt(2, (pTblData->wBasic_EP) + (pTblData->byLevel_Up_EP * level));
 	app->db->setInt(3, pTblData->wBasic_RP + (pTblData->byLevel_Up_RP * level));
-	app->db->setInt(4,  this->plr->pcProfile->charId);
+	app->db->setInt(4, pTblData->wDodge_Rate);
+	app->db->setInt(5, pTblData->wAttack_Rate);
+	app->db->setInt(6, pTblData->wBlock_Rate);
+	app->db->setInt(7, 10);
+	app->db->setInt(8, 10);
+	app->db->setInt(9,  this->plr->pcProfile->charId);
 	app->db->execute();
 }
 void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
@@ -130,11 +135,14 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.avatarAttribute.wBaseAttackRate = app->db->getInt("BaseAttackRate");
 	res->sPcProfile.avatarAttribute.wBaseDodgeRate = app->db->getInt("BaseDodgeRate");
 	res->sPcProfile.avatarAttribute.wBaseBlockRate = app->db->getInt("BaseBlockRate");
+	res->sPcProfile.avatarAttribute.wBasePhysicalCriticalRate = app->db->getInt("BasePhysicalCriticalRate");
+ 	res->sPcProfile.avatarAttribute.wBaseEnergyCriticalRate = app->db->getInt("BaseEnergyCriticalRate");
 	res->sPcProfile.byLevel = app->db->getInt("Level");
 	res->sPcProfile.dwCurExp = app->db->getInt("Exp");
 	res->sPcProfile.dwMaxExpInThisLevel = app->db->getInt("MaxExpInThisLevel");
 	res->sPcProfile.dwZenny = app->db->getInt("Money");
-	res->sPcProfile.dwTutorialHint = 0;
+	res->sPcProfile.dwTutorialHint = -1;
+	//res->sPcProfile.byBindType = DBO_BIND_TYPE_INITIAL_LOCATION;	
 	res->sPcProfile.dwReputation = app->db->getInt("Reputation");
 	res->sPcProfile.dwMudosaPoint = app->db->getInt("MudosaPoint");
 	res->sPcProfile.dwSpPoint = app->db->getInt("SpPoint");
@@ -2958,4 +2966,41 @@ void	CClientSession::SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app)
 	
 	packet.SetPacketLen(sizeof(sGU_BANK_LOAD_RES));
  	g_pApp->Send(this->GetHandle(), &packet);
+}
+
+//-------------------------------------------------
+//      Quick Slot Update insert luiz45
+//-------------------------------------------------
+void CClientSession::SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_QUICK_SLOT_UPDATE_REQ * req = (sUG_QUICK_SLOT_UPDATE_REQ*)pPacket->GetPacketData();
+
+	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
+	sGU_QUICK_SLOT_UPDATE_RES * res = (sGU_QUICK_SLOT_UPDATE_RES*)packet.GetPacketData();	
+
+	printf("QUICK SLOT ID: %i", req->bySlotID);
+	app->qry->InsertRemoveQuickSlot(req->tblidx, req->bySlotID, this->plr->pcProfile->charId);
+
+	res->wResultCode = GAME_SUCCESS;
+	res->wOpCode = GU_QUICK_SLOT_UPDATE_RES;
+
+	packet.SetPacketLen(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
+	g_pApp->Send(this->GetHandle(), &packet);
+}
+//-------------------------------------------------
+//      Quick Slot Update Delete luiz45
+//-------------------------------------------------
+void CClientSession::SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_QUICK_SLOT_DEL_REQ * req = (sUG_QUICK_SLOT_DEL_REQ*)pPacket->GetPacketData();
+
+	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_DEL_NFY));	
+	sGU_QUICK_SLOT_DEL_NFY * response = (sGU_QUICK_SLOT_DEL_NFY*)packet.GetPacketData();
+	app->qry->InsertRemoveQuickSlot(0, req->bySlotID, this->plr->pcProfile->charId);
+
+	response->bySlotID = req->bySlotID;
+	response->wOpCode = GU_QUICK_SLOT_DEL_NFY;
+
+	packet.SetPacketLen(sizeof(sGU_QUICK_SLOT_DEL_NFY));
+	g_pApp->Send(this->GetHandle(), &packet);
 }

@@ -610,11 +610,13 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_QUICK_SLOT_UPDATE_REQ:
 		{
 			printf("--- UG_QUICK_SLOT_UPDATE_REQ --- \n");
+			CClientSession::SendCharUpdQuickSlot(pPacket, app);
 		}
 			break;
 		case UG_QUICK_SLOT_DEL_REQ:
 		{
 			printf("--- UG_QUICK_SLOT_DEL_REQ --- \n");
+			CClientSession::SendCharDelQuickSlot(pPacket, app);
 		}
 			break;
 		case UG_PET_DISMISS_PET_REQ:

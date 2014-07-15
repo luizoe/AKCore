@@ -207,6 +207,10 @@ public:
 	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app);
+	// QuickSlots
+	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);
+ 	void						SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app);
+
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	// BANK
