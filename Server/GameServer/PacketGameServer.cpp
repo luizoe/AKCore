@@ -136,13 +136,21 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.avatarAttribute.wBaseDodgeRate = app->db->getInt("BaseDodgeRate");
 	res->sPcProfile.avatarAttribute.wBaseBlockRate = app->db->getInt("BaseBlockRate");
 	res->sPcProfile.avatarAttribute.wBasePhysicalCriticalRate = app->db->getInt("BasePhysicalCriticalRate");
+<<<<<<< .mine
  	res->sPcProfile.avatarAttribute.wBaseEnergyCriticalRate = app->db->getInt("BaseEnergyCriticalRate");
+=======
+	res->sPcProfile.avatarAttribute.wBaseEnergyCriticalRate = app->db->getInt("BaseEnergyCriticalRate");
+>>>>>>> .theirs
 	res->sPcProfile.byLevel = app->db->getInt("Level");
 	res->sPcProfile.dwCurExp = app->db->getInt("Exp");
 	res->sPcProfile.dwMaxExpInThisLevel = app->db->getInt("MaxExpInThisLevel");
 	res->sPcProfile.dwZenny = app->db->getInt("Money");
 	res->sPcProfile.dwTutorialHint = -1;
+<<<<<<< .mine
 	//res->sPcProfile.byBindType = DBO_BIND_TYPE_INITIAL_LOCATION;	
+=======
+	//res->sPcProfile.byBindType = DBO_BIND_TYPE_INITIAL_LOCATION;
+>>>>>>> .theirs
 	res->sPcProfile.dwReputation = app->db->getInt("Reputation");
 	res->sPcProfile.dwMudosaPoint = app->db->getInt("MudosaPoint");
 	res->sPcProfile.dwSpPoint = app->db->getInt("SpPoint");
@@ -191,7 +199,6 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.wCurLP = app->db->getInt("CurLP");
 	res->sPcProfile.wCurEP = app->db->getInt("CurEP");
 	res->sPcProfile.wCurRP = app->db->getInt("CurRP");
-	
 	this->plr->setPlayerStat(&res->sPcProfile, &res->sCharState);
 	packet.SetPacketLen( sizeof(sGU_AVATAR_CHAR_INFO) );
 	int rc = g_pApp->Send( this->GetHandle(), &packet );

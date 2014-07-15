@@ -98,7 +98,7 @@ bool		MobActivity::RunSpawnCheck(CNtlPacket * pPacket, sVECTOR3 curPos, CClientS
 					res->sObjectInfo.mobState.sCharStateBase.vCurLoc.x = creaturelist->Spawn_Loc.x;
 					res->sObjectInfo.mobState.sCharStateBase.vCurLoc.y = creaturelist->Spawn_Loc.y;
 					res->sObjectInfo.mobState.sCharStateBase.vCurLoc.z = creaturelist->Spawn_Loc.z;
-					res->sObjectInfo.mobState.sCharStateBase.vCurDir.x = creaturelist->Spawn_Dir.x + rand()%360;
+					res->sObjectInfo.mobState.sCharStateBase.vCurDir.x = creaturelist->Spawn_Dir.x;
 					res->sObjectInfo.mobState.sCharStateBase.vCurDir.y = creaturelist->Spawn_Dir.y;
 					res->sObjectInfo.mobState.sCharStateBase.vCurDir.z = creaturelist->Spawn_Dir.z;
 					res->sObjectInfo.mobState.sCharStateBase.byStateID = CHARSTATE_SPAWNING;
@@ -117,7 +117,7 @@ bool		MobActivity::RunSpawnCheck(CNtlPacket * pPacket, sVECTOR3 curPos, CClientS
 					g_pApp->Send( pSession->GetHandle(), &packet );
 				}
 			}
-		}else{ //if(pSession->IsMonsterInsideList(creaturelist->MonsterSpawnID) == true){
+		}else if(pSession->IsMonsterInsideList(creaturelist->MonsterSpawnID) == true){
 			//	printf("remove monster \n");
 				CNtlPacket packet(sizeof(sGU_OBJECT_DESTROY));
 				sGU_OBJECT_DESTROY * res = (sGU_OBJECT_DESTROY *)packet.GetPacketData();
