@@ -37,6 +37,11 @@
 #include "ItemMixMachineTable.h"
 #include "ExpTable.h"
 #include "QuestRewardTable.h"
+#include "EachDropTable.h"
+#include "ExcellentDropTable.h"
+#include "LegendaryDropTable.h"
+#include "NormalDropTable.h"
+#include "SuperiorDropTable.h"
 // END TABLES
 #include "PlayerInfos.h"
 #include "MobActivity.h"
@@ -150,7 +155,6 @@ public:
 	void						SendCharSitDown(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharStandUp(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app);
-	void						SendCharSkillTrainning(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharFollowMove(CNtlPacket * pPacket, CGameServer * app);
 	void						SendExcuteTriggerObject(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharBindReq(CNtlPacket * pPacket, CGameServer * app);
@@ -195,7 +199,7 @@ public:
 
 	void						SendShopSkillReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharLearnSkillReq(CNtlPacket * pPacket, CGameServer * app);
-
+	//Items
 	void						SendItemMoveReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendItemDeleteReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendItemStackReq(CNtlPacket * pPacket, CGameServer * app);
@@ -216,7 +220,7 @@ public:
 	// QuickSlots
 	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);
  	void						SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app);
-
+	
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	// BANK
@@ -226,6 +230,7 @@ public:
 	void						SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app);
 	// LOOT
 	void						SendMobLoot(CNtlPacket * pPacket, CGameServer * app, RwUInt32 m_uiTargetSerialId);
+	void						SendZennyPickUpReq(CNtlPacket * pPacket, CGameServer * app);
 	// LEVEL UP
 	void						SendPlayerLevelUpCheck(CGameServer * app, int exp);
 	// QUEST

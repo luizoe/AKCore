@@ -338,6 +338,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_ITEM_USE_REQ:
 		{
 			printf("--- UG_ITEM_USE_REQ --- \n");
+			CClientSession::SendItemUseReq(pPacket, app);
 		}
 			break;
 		case UG_ITEM_UPGRADE_REQ:
@@ -353,6 +354,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_ZENNY_PICK_REQ:
 		{
 			printf("--- UG_ZENNY_PICK_REQ --- \n");
+			CClientSession::SendZennyPickUpReq(pPacket, app);
 		}
 			break;
 		case UG_SHOP_START_REQ:
@@ -1527,6 +1529,14 @@ bool CGameServer::CreateTableContainer(int byLoadMethod)
 	flagManager.Set(CTableContainer::TABLE_MOB_SPAWN);
 	flagManager.Set(CTableContainer::TABLE_FORMULA);
 	flagManager.Set(CTableContainer::TABLE_GAME_MANIA_TIME);
+	flagManager.Set(CTableContainer::TABLE_BASIC_DROP);
+	flagManager.Set(CTableContainer::TABLE_LEGENDARY_DROP);
+	flagManager.Set(CTableContainer::TABLE_NORMAL_DROP);
+	flagManager.Set(CTableContainer::TABLE_SUPERIOR_DROP);
+	flagManager.Set(CTableContainer::TABLE_EACH_DROP);
+	flagManager.Set(CTableContainer::TABLE_TYPE_DROP);
+	flagManager.Set(CTableContainer::TABLE_EXCELLENT_DROP);
+	flagManager.Set(CTableContainer::TABLE_EXP);
 	
 	fileNameList.SetFileName(CTableContainer::TABLE_WORLD,					"Table_World_Data");
 	fileNameList.SetFileName(CTableContainer::TABLE_PC,						"Table_PC_Data");
@@ -1575,6 +1585,7 @@ bool CGameServer::CreateTableContainer(int byLoadMethod)
 	fileNameList.SetFileName(CTableContainer::TABLE_WORLD_ZONE,				"Table_World_Zone_Data");
 	fileNameList.SetFileName(CTableContainer::TABLE_FORMULA,				"TD_Formula");
 	fileNameList.SetFileName(CTableContainer::TABLE_GAME_MANIA_TIME,		"Table_GameManiaTime_Data");
+	fileNameList.SetFileName(CTableContainer::TABLE_EXP,					"table_exp_data");
 
 	g_pTableContainer = new CTableContainer;
 	
@@ -1588,8 +1599,7 @@ bool CGameServer::CreateTableContainer(int byLoadMethod)
      bResult = g_pTableContainer->Create(flagManager, (char*)str.c_str(), &fileNameList, eLoadMethod, GetACP(), NULL);
 	 //g_pTableContainer->SaveToFile(flagManager, &fileNameList, false);
     	
-	printf("==== LOADING GAMETABLES COMPLETE ==== \n");
-                                                                                                                                                  
+	printf("==== LOADING GAMETABLES COMPLETE ==== \n");                                                                                              
 	mob->Create();
 	return bResult;
 }
