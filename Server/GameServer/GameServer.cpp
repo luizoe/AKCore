@@ -36,7 +36,8 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 	CGameServer * app = (CGameServer*) NtlSfxGetApp();
 	sNTLPACKETHEADER * pHeader = (sNTLPACKETHEADER *)pPacket->GetPacketData();
 	//printf("~~~ opcode %i received ~~~ \n", pHeader->wOpCode);
-
+	if (pHeader->wOpCode >= 37000)
+		printf("This should be ng gn\n");
 	switch( pHeader->wOpCode )
 	{
 		case UG_GAME_ENTER_REQ:
@@ -45,6 +46,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 			CClientSession::SendAvatarCharInfo(pPacket, app);
 			CClientSession::SendAvatarItemInfo(pPacket, app);
 			CClientSession::SendAvatarSkillInfo(pPacket, app);
+			CClientSession::SendSlotInfo(pPacket, app);
 			CClientSession::SendAvatarInfoEnd(pPacket);
 		}
 			break;
@@ -285,6 +287,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_HTB_LEARN_REQ:
 		{
 			printf("--- UG_HTB_LEARN_REQ --- \n");
+			CClientSession::SendCharSkillHTBLearn(pPacket, app);
 		}
 			break;
 		case UG_HTB_FORWARD_REQ:
@@ -559,7 +562,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 			break;
 		case UG_TS_CONFIRM_STEP_REQ:
 		{
-			printf("--- UG_TS_CONFIRM_STEP_REQ --- \n");
+			SendPlayerQuestReq(pPacket,app);
 		}
 			break;
 		case UG_TS_UPDATE_STATE:
@@ -1627,7 +1630,7 @@ int GameServerMain(int argc, _TCHAR* argv[])
 
 	// NEW CLASS
 	app.mob = new MobActivity();
-
+	
 	app.Start();
 	Sleep(500);
 	std::cout << "\n\n" << std::endl;

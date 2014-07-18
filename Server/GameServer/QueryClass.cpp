@@ -200,3 +200,4 @@ bool	QueryClass::UpdateSPPoint(RwUInt32 CharID, RwUInt32 point)
 
 	return true;
 }
+ 

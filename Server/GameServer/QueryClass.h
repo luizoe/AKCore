@@ -34,6 +34,7 @@ public:
 	bool						UpdateCharAwayStatus(RwUInt32 CharID, RwUInt32 AwayStatus);
 	bool						SetMailAccept(RwUInt32 CharID, RwUInt32 MailID);
 	bool						UpdateSPPoint(RwUInt32 CharID, RwUInt32 point);
+
 };
 
 #endif

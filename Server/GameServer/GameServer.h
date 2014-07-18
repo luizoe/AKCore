@@ -35,6 +35,8 @@
 #include "ItemTable.h"
 #include "FormulaTable.h"
 #include "ItemMixMachineTable.h"
+#include "ExpTable.h"
+#include "QuestRewardTable.h"
 // END TABLES
 #include "PlayerInfos.h"
 #include "MobActivity.h"
@@ -118,6 +120,7 @@ public:
 	void						CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, int level);
 	void						SendAvatarItemInfo(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarSkillInfo(CNtlPacket * pPacket, CGameServer * app);
+	void						SendSlotInfo(CNtlPacket * pPacket, CGameServer * app);
 	void						SendAvatarInfoEnd(CNtlPacket * pPacket);
 	void						SendAuthCommunityServer(CNtlPacket * pPacket, CGameServer * app);
 
@@ -147,8 +150,7 @@ public:
 	void						SendCharSitDown(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharStandUp(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * app);
-	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);
-	void						SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app);
+	void						SendCharSkillTrainning(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharFollowMove(CNtlPacket * pPacket, CGameServer * app);
 	void						SendExcuteTriggerObject(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharBindReq(CNtlPacket * pPacket, CGameServer * app);
@@ -209,6 +211,12 @@ public:
 	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app);
+	//HTB
+	void						SendCharSkillHTBLearn(CNtlPacket * pPacket, CGameServer * app);
+	// QuickSlots
+	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);
+ 	void						SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app);
+
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	// BANK
@@ -216,6 +224,12 @@ public:
 	void						SendBankEndReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendBankBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app);
+	// LOOT
+	void						SendMobLoot(CNtlPacket * pPacket, CGameServer * app, RwUInt32 m_uiTargetSerialId);
+	// LEVEL UP
+	void						SendPlayerLevelUpCheck(CGameServer * app, int exp);
+	// QUEST
+	void						SendPlayerQuestReq(CNtlPacket * pPacket, CGameServer * app);
 	//Game Server functions
 	sGU_OBJECT_CREATE			characterspawnInfo;
 	//

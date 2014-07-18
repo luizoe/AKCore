@@ -26,7 +26,16 @@ void CClientSession::SendGameEnterReq(CNtlPacket * pPacket, CGameServer * app)
 	this->plr->pcProfile->charId = req->charId;
 	this->plr->SetAccountID(req->accountId);
 	this->plr->setMyAPP(app);
+	avatarHandle = AcquireSerialId();
+
+	this->plr->StoreHandle(avatarHandle);
+	this->plr->StoreSession(this->GetHandle());
 	CNtlPacket packet(sizeof(sGU_GAME_ENTER_RES));
+
+	app->db->prepare("UPDATE characters SET IsOnline = 1 WHERE CharID = ?");
+	app->db->setInt(1,  this->plr->pcProfile->charId);
+	app->db->execute();
+
 	sGU_GAME_ENTER_RES * res = (sGU_GAME_ENTER_RES *)packet.GetPacketData();
 
 	res->wOpCode = GU_GAME_ENTER_RES;
@@ -73,20 +82,17 @@ void CClientSession::CheckPlayerStat(CGameServer * app, sPC_TBLDAT *pTblData, in
 	app->db->setInt(8, 10);
 	app->db->setInt(9,  this->plr->pcProfile->charId);
 	app->db->execute();
+
+	this->plr->SetLevelup(pTblData);
 }
 void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 {
-	avatarHandle = AcquireSerialId();
-
-	this->plr->StoreHandle(avatarHandle);
-	this->plr->StoreSession(this->GetHandle());
-
 	printf("--- LOAD CHARACTER INFO FOR GAMESERVER --- \n");
 	CNtlPacket packet(sizeof(sGU_AVATAR_CHAR_INFO));
 	sGU_AVATAR_CHAR_INFO * res = (sGU_AVATAR_CHAR_INFO *)packet.GetPacketData();
 
 	app->db->prepare("UPDATE characters SET OnlineID = ? WHERE CharID = ?");
-	app->db->setInt(1, avatarHandle);
+	app->db->setInt(1, this->plr->GetAvatarandle());
 	app->db->setInt(2,  this->plr->pcProfile->charId);
 	app->db->execute();
 
@@ -97,7 +103,7 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 
 	CPCTable *pPcTable = app->g_pTableContainer->GetPcTable();
 	sPC_TBLDAT *pTblData = (sPC_TBLDAT*)pPcTable->GetPcTbldat(app->db->getInt("Race"),app->db->getInt("Class"),app->db->getInt("Gender"));
-	CClientSession::CheckPlayerStat(app, pTblData, app->db->getInt("Level"));
+	CClientSession::CheckPlayerStat(app, pTblData, app->db->getInt("Level") - 1);
 	
 	app->db->prepare("SELECT * FROM characters WHERE CharID = ?");
 	app->db->setInt(1,  this->plr->pcProfile->charId);
@@ -105,7 +111,7 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	app->db->fetch();
 
 	res->wOpCode = GU_AVATAR_CHAR_INFO;
-	res->handle = avatarHandle;
+	res->handle = this->plr->GetAvatarandle();
 	res->sPcProfile.tblidx = pTblData->tblidx;
 	res->sPcProfile.bIsAdult = app->db->getBoolean("Adult");
 	res->sPcProfile.charId = app->db->getInt("CharID");
@@ -142,7 +148,8 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.dwMaxExpInThisLevel = app->db->getInt("MaxExpInThisLevel");
 	res->sPcProfile.dwZenny = app->db->getInt("Money");
 	res->sPcProfile.dwTutorialHint = -1;
-	//res->sPcProfile.byBindType = DBO_BIND_TYPE_INITIAL_LOCATION;
+	//res->sPcProfile.byBindType = DBO_BIND_TYPE_INITIAL_LOCATION;	
+
 	res->sPcProfile.dwReputation = app->db->getInt("Reputation");
 	res->sPcProfile.dwMudosaPoint = app->db->getInt("MudosaPoint");
 	res->sPcProfile.dwSpPoint = app->db->getInt("SpPoint");
@@ -191,10 +198,11 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->sPcProfile.wCurLP = app->db->getInt("CurLP");
 	res->sPcProfile.wCurEP = app->db->getInt("CurEP");
 	res->sPcProfile.wCurRP = app->db->getInt("CurRP");
-	
 	this->plr->setPlayerStat(&res->sPcProfile, &res->sCharState);
 	packet.SetPacketLen( sizeof(sGU_AVATAR_CHAR_INFO) );
 	int rc = g_pApp->Send( this->GetHandle(), &packet );
+	this->plr->SetStartRPBall();
+	
 }
 
 //--------------------------------------------------------------------------------------//
@@ -231,7 +239,34 @@ void CClientSession::SendAvatarItemInfo(CNtlPacket * pPacket, CGameServer * app)
 		i++;
 	}
 }
-
+void CClientSession::SendSlotInfo(CNtlPacket * pPacket, CGameServer * app)
+{
+	app->db->prepare("SELECT * FROM quickslot WHERE charId = ?");
+	app->db->setInt(1, this->plr->pcProfile->charId);
+	app->db->execute();
+	
+	//Forget this part...just a test code with some new valus the new Column don't be need created because never use this code block
+	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
+	sGU_QUICK_SLOT_UPDATE_RES * res = (sGU_QUICK_SLOT_UPDATE_RES *)packet.GetPacketData();
+	res->wOpCode = GU_QUICK_SLOT_UPDATE_RES;
+	res->wResultCode = GAME_SUCCESS;
+	app->db->fetch();
+	int i = 0;
+	int skill= 0;
+	int placeID = 0;
+	for (i = 0; i <33 ; i++)
+	{
+		std::string query = "slotId_" + std::to_string(i);
+		printf("LOading slot %s\n", query.c_str());
+		skill = app->db->getInt(query.c_str());
+		placeID = app->db->getInt("placeID");
+		res->byPlace = placeID;
+		res->tblidx = skill;		
+		res->bySlotID = i;
+	}
+	packet.AdjustPacketLen(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
+	g_pApp->Send( this->GetHandle() , &packet );
+}
 //--------------------------------------------------------------------------------------//
 //		Send Avatar Skillinfo
 //--------------------------------------------------------------------------------------//
@@ -248,12 +283,48 @@ void CClientSession::SendAvatarSkillInfo(CNtlPacket * pPacket, CGameServer * app
 
 	res->wOpCode = GU_AVATAR_SKILL_INFO;
 	res->bySkillCount = app->db->rowsCount();
-
+	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
 	while( app->db->fetch() )
 	{
+		//Added because Shenron Buffs and for help to detect type of skills
+		//Note Shenron Buffs does not take ANY SLOTID
+		sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(app->db->getInt("skill_id")));
+		switch (pSkillData->bySkill_Active_Type)
+		{
+		case SKILL_ACTIVE_TYPE_DD:
+			printf("a\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_BB:
+			printf("b\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_CB:
+			printf("c\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DB:
+			printf("d\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DC:
+			printf("e");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DH:
+			printf("f\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DOT:
+			printf("g\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		}
+
 		res->aSkillInfo[i].bIsRpBonusAuto = app->db->getBoolean("RpBonusAuto");
-		res->aSkillInfo[i].byRpBonusType = app->db->getInt("RpBonusType");
-		res->aSkillInfo[i].bySlotId = app->db->getInt("SlotID");
+		res->aSkillInfo[i].byRpBonusType = app->db->getInt("RpBonusType");		
+		if (pSkillData->bySkill_Active_Type == SKILL_ACTIVE_TYPE_DB)
+			res->aSkillInfo[i].bySlotId = app->db->getInt("SlotID");		
 		res->aSkillInfo[i].dwTimeRemaining = app->db->getInt("TimeRemaining");
 		res->aSkillInfo[i].nExp = app->db->getInt("Exp");
 		res->aSkillInfo[i].tblidx = app->db->getInt("skill_id");
@@ -863,7 +934,11 @@ void CClientSession::SendCharTargetInfo(CNtlPacket * pPacket)
 void CClientSession::SendGameLeaveReq(CNtlPacket * pPacket, CGameServer * app)
 {
 	printf("--- CHARACTER REQUEST LEAVE GAME --- \n");
-
+	
+	app->db->prepare("UPDATE characters SET IsOnline = 0 WHERE CharID = ?");
+	app->db->setInt(1,  this->plr->pcProfile->charId);
+	app->db->execute();
+	
 	this->plr->SaveMe();
 	app->RemoveUser( this->plr->GetPlayerName().c_str() );
 	CNtlPacket packet(sizeof(sGU_OBJECT_DESTROY));
@@ -881,6 +956,10 @@ void CClientSession::SendGameLeaveReq(CNtlPacket * pPacket, CGameServer * app)
 void CClientSession::SendCharExitReq(CNtlPacket * pPacket, CGameServer * app)
 {
 	//printf("--- Char exit request --- \n");
+	app->db->prepare("UPDATE characters SET IsOnline = 0 WHERE CharID = ?");
+	app->db->setInt(1,  this->plr->pcProfile->charId);
+	app->db->execute();
+
 	this->plr->SaveMe();
 // log out of game
 	CNtlPacket packet1(sizeof(sGU_OBJECT_DESTROY));
@@ -2015,7 +2094,10 @@ void CClientSession::SendCharActionAttack(RwUInt32 uiSerialId, RwUInt32 m_uiTarg
 	{
 		m_iCurrentHp -= m_iCurrentHp;
 		if(m_iCurrentHp <= 0)
+		{
 			m_iCurrentHp = 0;
+			CClientSession::SendMobLoot(&packet, app, m_uiTargetSerialId);
+		}
 
 		SendCharUpdateLp(pPacket, app, m_iCurrentHp, m_uiTargetSerialId);
 	}
@@ -2041,7 +2123,28 @@ void CClientSession::SendCharUpdateLp(CNtlPacket * pPacket, CGameServer * app, R
 	app->UserBroadcastothers(&packet, this);
 	g_pApp->Send( this->GetHandle() , &packet );
 }
+void	CClientSession::SendMobLoot(CNtlPacket * pPacket, CGameServer * app, RwUInt32 m_uiTargetSerialId)
+{
+	int mobid = 0;
 
+	if ((mobid = IsMonsterIDInsideList(m_uiTargetSerialId)) != 0)
+	{
+		sMOB_TBLDAT* mob = (sMOB_TBLDAT*)app->g_pTableContainer->GetMobTable()->FindData(mobid);
+		printf("%d\n", mob->byDropEachRateControl);
+		printf("%d\n", mob->byDropEItemRateControl);
+		printf("%d\n", mob->byDropLItemRateControl);
+		printf("%d\n", mob->byDropNItemRateControl);
+		printf("%d\n", mob->byDropSItemRateControl);
+		printf("%d\n", mob->byDropTypeRateControl);
+		printf("%d\n", mob->dropEachTblidx);
+		printf("%d\n", mob->dropQuestTblidx);
+		printf("%d\n", mob->dropTypeTblidx);
+		printf("%d\n", mob->drop_Item_Tblidx);
+		printf("%d\n", mob->dwDrop_Zenny);
+		printf("%d\n", mob->fDrop_Zenny_Rate);
+		CClientSession::SendPlayerLevelUpCheck(app, mob->wExp);
+	}
+}
 void CClientSession::SendCharUpdateFaintingState(CNtlPacket * pPacket, CGameServer * app, RwUInt32 uiSerialId, RwUInt32 m_uiTargetSerialId)
 {
 	//printf("char die: %i \n", m_uiTargetSerialId);
@@ -2361,7 +2464,27 @@ void CClientSession::SendCharLearnSkillReq(CNtlPacket * pPacket, CGameServer * a
 
 }
 
+//--------------------------------------------------------------------------------------//
+//		Char learn HTB skill
+//--------------------------------------------------------------------------------------//
+void CClientSession::SendCharSkillHTBLearn(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_HTB_LEARN_REQ * req = (sUG_HTB_LEARN_REQ*)pPacket->GetPacketData();
 
+	CNtlPacket packetHTB(sizeof(sGU_HTB_LEARN_RES));
+	sGU_HTB_LEARN_RES * res = (sGU_HTB_LEARN_RES*)packetHTB.GetPacketData();
+	
+	CHTBSetTable * pHTBTable = app->g_pTableContainer->GetHTBSetTable();
+	sHTB_SET_TBLDAT *pHTBSetTblData = reinterpret_cast<sHTB_SET_TBLDAT*>(pHTBTable->FindData(req->skillId));	
+
+	res->skillId	  = pHTBSetTblData->tblidx;
+	res->bySkillSlot  = pHTBSetTblData->bySlot_Index;
+	res->wOpCode	  = GU_HTB_LEARN_RES;
+	res->wResultCode  = GAME_SUCCESS;
+	packetHTB.SetPacketLen(sizeof(sGU_HTB_LEARN_RES));
+	g_pApp->Send(this->GetHandle(), &packetHTB);
+	app->qry->InsertNewSkill(pHTBSetTblData->tblidx, this->plr->pcProfile->charId, pHTBSetTblData->bySlot_Index, 0, 0);
+}
 //--------------------------------------------------------------------------------------//
 //		MOVE ITEM
 //--------------------------------------------------------------------------------------//
@@ -2786,6 +2909,9 @@ void	CClientSession::SendDragonBallCheckReq(CNtlPacket * pPacket, CGameServer * 
 	CNtlPacket packet(sizeof(sGU_DRAGONBALL_CHECK_RES));
 	sGU_DRAGONBALL_CHECK_RES * res = (sGU_DRAGONBALL_CHECK_RES *)packet.GetPacketData();
 
+	CItemTable* pItemTable = app->g_pTableContainer->GetItemTable();
+	
+
 	int dragonBall[7] = {9, 9, 9, 9, 9, 9, 9};// 7 because we need loop 0 - 6 because position start to 0 :)
 	int i = 0;
 	while (i <= 6)
@@ -2826,17 +2952,32 @@ void	CClientSession::SendDragonBallCheckReq(CNtlPacket * pPacket, CGameServer * 
 
 void	CClientSession::SendDragonBallRewardReq(CNtlPacket * pPacket, CGameServer * app) // THIS IS THE FIRST VERSION
 {
-	//printf("--- UG_DRAGONBALL_REWARD_REQ --- \n");
+	printf("--- UG_DRAGONBALL_REWARD_REQ --- \n");
 	sUG_DRAGONBALL_REWARD_REQ * req = (sUG_DRAGONBALL_REWARD_REQ *)pPacket->GetPacketData();
 	CNtlPacket packet(sizeof(sGU_DRAGONBALL_REWARD_RES));
 	sGU_DRAGONBALL_REWARD_RES * res = (sGU_DRAGONBALL_REWARD_RES *)packet.GetPacketData();
 		
 	sDRAGONBALL_REWARD_TBLDAT* pDBtData = (sDRAGONBALL_REWARD_TBLDAT*)app->g_pTableContainer->GetDragonBallRewardTable()->FindData(req->rewardTblidx);
-	//printf("Datacontainer = byBallType = %d, byRewardCategoryDepth = %d, rewardType = %d\ndwRewardZenny = %d, catergoryDialogue = %d\nCategoryName = %d, RewardDialog1 = %d, RewardDialog2 = %d\nrewardlinktblidx = %d, rewardname = %d, tdblidx = %d\n",
-	//	pDBtData->byBallType, pDBtData->byRewardCategoryDepth, pDBtData->byRewardType, pDBtData->dwRewardZenny, pDBtData->rewardCategoryDialog,pDBtData->rewardCategoryName,
-	//	pDBtData->rewardDialog1, pDBtData->rewardDialog2,pDBtData->rewardLinkTblidx, pDBtData->rewardName, pDBtData->tblidx);
-	//printf("Reward have been found.\nReward id = %d.\n", req->rewardTblidx);
-				
+	printf("Datacontainer = byBallType = %d, byRewardCategoryDepth = %d, rewardType = %d\ndwRewardZenny = %d, catergoryDialogue = %d\nCategoryName = %d, RewardDialog1 = %d, RewardDialog2 = %d\nrewardlinktblidx = %d, rewardname = %d, tdblidx = %d\n",
+		pDBtData->byBallType, pDBtData->byRewardCategoryDepth, pDBtData->byRewardType, pDBtData->dwRewardZenny, pDBtData->rewardCategoryDialog,pDBtData->rewardCategoryName,
+		pDBtData->rewardDialog1, pDBtData->rewardDialog2,pDBtData->rewardLinkTblidx, pDBtData->rewardName, pDBtData->tblidx);
+	printf("Reward have been found.\nReward id = %d.\n", req->rewardTblidx);
+	//---------------SkillTable Learning-----------------------------------------------------------------------//
+	//This part was made to learn Dragon Buffs Skills or charId
+	CSkillTable* pSkillTable = app->g_pTableContainer->GetSkillTable();
+	sSKILL_TBLDAT* pSkillData = (sSKILL_TBLDAT*)pSkillTable->FindData(pDBtData->rewardLinkTblidx);
+	if (pSkillData->tblidx != INVALID_TBLIDX)
+	{
+		CNtlPacket packet3(sizeof(sGU_SKILL_LEARNED_NFY));
+		sGU_SKILL_LEARNED_NFY * res3 = (sGU_SKILL_LEARNED_NFY *)packet3.GetPacketData();
+		//NEVER SEND SLOTID BECAUSE IF WAS DRAGON BUFF YOUR CLIENT WILL BE CRASH...
+		res3->wOpCode = GU_SKILL_LEARNED_NFY;
+		res3->skillId = pSkillData->tblidx;		
+		app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, 0);
+		packet3.SetPacketLen(sizeof(sGU_SKILL_LEARNED_NFY));
+		g_pApp->Send(this->GetHandle(), &packet3);
+	}
+	//---------------End Skill Learn---------------------------------------------------------------------------//
 	res->hObject = req->hObject;
 	res->wOpCode = GU_DRAGONBALL_REWARD_RES;
 	res->wResultCode = GAME_SUCCESS;
@@ -2883,8 +3024,7 @@ void CClientSession::SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * ap
 	app->db->fetch();
 
 	int skillID = app->db->getInt("skill_id");
-	sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skillID));
- 	
+	sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skillID)); 	
  	if (pSkillData->dwNextSkillTblidx)
  	{
  		CNtlPacket packet(sizeof(sGU_SKILL_UPGRADE_RES));
@@ -2917,42 +3057,6 @@ void CClientSession::SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * ap
  		packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_SP));
  		g_pApp->Send(this->GetHandle(), &packet2);
 	}
-}
-//-------------------------------------------------
-//      Quick Slot Update insert luiz45
-//-------------------------------------------------
-void CClientSession::SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app)
-{
-	sUG_QUICK_SLOT_UPDATE_REQ * req = (sUG_QUICK_SLOT_UPDATE_REQ*)pPacket->GetPacketData();
-
-	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
-	sGU_QUICK_SLOT_UPDATE_RES * res = (sGU_QUICK_SLOT_UPDATE_RES*)packet.GetPacketData();	
-
-	printf("QUICK SLOT ID: %i", req->bySlotID);
-	app->qry->InsertRemoveQuickSlot(req->tblidx, req->bySlotID, this->plr->pcProfile->charId);
-	
-	res->wResultCode = GAME_SUCCESS;
-	res->wOpCode = GU_QUICK_SLOT_UPDATE_RES;
-	
-	packet.SetPacketLen(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
-	g_pApp->Send(this->GetHandle(), &packet);
-}
-//-------------------------------------------------
-//      Quick Slot Update Delete luiz45
-//-------------------------------------------------
-void CClientSession::SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app)
-{
-	sUG_QUICK_SLOT_DEL_REQ * req = (sUG_QUICK_SLOT_DEL_REQ*)pPacket->GetPacketData();
-	
-	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_DEL_NFY));	
-	sGU_QUICK_SLOT_DEL_NFY * response = (sGU_QUICK_SLOT_DEL_NFY*)packet.GetPacketData();
-	app->qry->InsertRemoveQuickSlot(0, req->bySlotID, this->plr->pcProfile->charId);
-	
-	response->bySlotID = req->bySlotID;
-	response->wOpCode = GU_QUICK_SLOT_DEL_NFY;
-
-	packet.SetPacketLen(sizeof(sGU_QUICK_SLOT_DEL_NFY));
-	g_pApp->Send(this->GetHandle(), &packet);
 }
 void CClientSession::SendCharSkillTrainning(CNtlPacket * pPacket, CGameServer * app)
 {
@@ -3007,4 +3111,110 @@ void	CClientSession::SendBankLoadReq(CNtlPacket * pPacket, CGameServer * app)
 	
 	packet.SetPacketLen(sizeof(sGU_BANK_LOAD_RES));
  	g_pApp->Send(this->GetHandle(), &packet);
+}
+
+//-------------------------------------------------
+//      Quick Slot Update insert luiz45
+//-------------------------------------------------
+void CClientSession::SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_QUICK_SLOT_UPDATE_REQ * req = (sUG_QUICK_SLOT_UPDATE_REQ*)pPacket->GetPacketData();
+
+	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
+	sGU_QUICK_SLOT_UPDATE_RES * res = (sGU_QUICK_SLOT_UPDATE_RES*)packet.GetPacketData();	
+
+	printf("QUICK SLOT ID: %i", req->bySlotID);
+	app->qry->InsertRemoveQuickSlot(req->tblidx, req->bySlotID, this->plr->pcProfile->charId);
+
+	res->wResultCode = GAME_SUCCESS;
+	res->wOpCode = GU_QUICK_SLOT_UPDATE_RES;
+
+	packet.SetPacketLen(sizeof(sGU_QUICK_SLOT_UPDATE_RES));
+	g_pApp->Send(this->GetHandle(), &packet);
+}
+//-------------------------------------------------
+//      Quick Slot Update Delete luiz45
+//-------------------------------------------------
+void CClientSession::SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app)
+{
+	sUG_QUICK_SLOT_DEL_REQ * req = (sUG_QUICK_SLOT_DEL_REQ*)pPacket->GetPacketData();
+
+	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_DEL_NFY));	
+	sGU_QUICK_SLOT_DEL_NFY * response = (sGU_QUICK_SLOT_DEL_NFY*)packet.GetPacketData();
+	app->qry->InsertRemoveQuickSlot(0, req->bySlotID, this->plr->pcProfile->charId);
+
+	response->bySlotID = req->bySlotID;
+	response->wOpCode = GU_QUICK_SLOT_DEL_NFY;
+
+	packet.SetPacketLen(sizeof(sGU_QUICK_SLOT_DEL_NFY));
+	g_pApp->Send(this->GetHandle(), &packet);
+}
+void CClientSession::SendPlayerLevelUpCheck(CGameServer * app, int exp)
+{
+	/*CExpTable *xp = app->g_pTableContainer->GetExpTable();
+	for ( CTable::TABLEIT it = xp->Begin(); it != xp->End(); it++)
+	{
+		sEXP_TBLDAT *_xp = (sEXP_TBLDAT*) it->second;
+		printf("%d = dwexp, %d = need xp, %d = id\n", _xp->dwExp, _xp->dwNeed_Exp, _xp->tblidx);
+	}*/
+	CNtlPacket packet(sizeof(sGU_UPDATE_CHAR_EXP));	
+	sGU_UPDATE_CHAR_EXP * response = (sGU_UPDATE_CHAR_EXP*)packet.GetPacketData();
+	response->dwAcquisitionExp = exp;
+	response->dwCurExp = this->plr->pcProfile->dwCurExp;
+	response->dwIncreasedExp = exp + rand() % this->plr->pcProfile->byLevel;
+	response->dwBonusExp = (exp - response->dwIncreasedExp);
+	response->handle = this->plr->GetAvatarandle();
+	response->wOpCode = GU_UPDATE_CHAR_EXP;
+	this->plr->pcProfile->dwCurExp += response->dwIncreasedExp;
+	if (this->plr->pcProfile->dwCurExp >= this->plr->pcProfile->dwMaxExpInThisLevel)
+	{
+		this->plr->pcProfile->dwCurExp -= this->plr->pcProfile->dwMaxExpInThisLevel;
+		this->plr->pcProfile->dwMaxExpInThisLevel += this->plr->pcProfile->dwMaxExpInThisLevel;
+		CNtlPacket packet1(sizeof(sGU_UPDATE_CHAR_LEVEL));	
+		sGU_UPDATE_CHAR_LEVEL * response1 = (sGU_UPDATE_CHAR_LEVEL*)packet1.GetPacketData();
+		this->plr->pcProfile->byLevel++;
+		response1->byCurLevel = this->plr->pcProfile->byLevel;
+		response1->byPrevLevel = this->plr->pcProfile->byLevel - 1;
+		response1->dwMaxExpInThisLevel = this->plr->pcProfile->dwMaxExpInThisLevel;
+		response1->handle = this->plr->GetAvatarandle();
+		response1->wOpCode = GU_UPDATE_CHAR_LEVEL;
+		packet1.SetPacketLen(sizeof(sGU_UPDATE_CHAR_LEVEL));
+		g_pApp->Send(this->GetHandle(), &packet1);
+		this->plr->LevelUpPlayer();
+		this->plr->calculeMyStat(app);
+		response->dwCurExp = this->plr->pcProfile->dwCurExp;
+		this->plr->UpdateRPBall();
+	}
+	packet.SetPacketLen(sizeof(sGU_UPDATE_CHAR_EXP));
+	g_pApp->Send(this->GetHandle(), &packet);
+}
+void CClientSession::SendPlayerQuestReq(CNtlPacket * pPacket, CGameServer * app)
+{
+	printf("--- UG_TS_CONFIRM_STEP_REQ --- \n");
+	sUG_TS_CONFIRM_STEP_REQ* req = (sUG_TS_CONFIRM_STEP_REQ *)pPacket->GetPacketData();
+	CNtlPacket packet(sizeof(sGU_TS_CONFIRM_STEP_RES));
+	sGU_TS_CONFIRM_STEP_RES * res = (sGU_TS_CONFIRM_STEP_RES *)packet.GetPacketData();
+
+	req->byEventType;
+
+	res->byTsType = req->byTsType;
+	res->dwParam = req->dwParam;
+	res->tcCurId = req->tcCurId;
+	res->tcNextId = req->tcNextId;
+	res->tId = req->tId;
+	res->wOpCode = GU_TS_CONFIRM_STEP_RES;
+	res->wResultCode = RESULT_SUCCESS;
+
+	if (res->tcNextId == 255)
+	{
+		printf("REWARD NOW\n");
+		// should be the reward because when we rewarsd a quest res->tcNextId is all the time 255
+		// WE NEED THE CORRECT TBLIDX FOR THE REWARD
+
+		/*sQUEST_REWARD_TBLDAT *rew = (sQUEST_REWARD_TBLDAT*)app->g_pTableContainer->GetQuestRewardTable()->FindData(res->tId);
+		printf("%d %d %d %d\n%d %d %d %d\n%d\n",rew->arsDefRwd[0], rew->arsDefRwd[1], rew->arsDefRwd[2], rew->arsDefRwd[3], rew->arsSelRwd[0], rew->arsSelRwd[1], rew->arsSelRwd[2], rew->arsSelRwd[3], rew->tblidx);*/
+	}
+	//printf("res->byTsType = %d, res->dwParam = %d, res->tcCurId = %d, res->tcNextId = %d, res->tId = %d\n",res->byTsType, res->dwParam, res->tcCurId, res->tcNextId, res->tId); 
+	packet.SetPacketLen( sizeof(sGU_TS_CONFIRM_STEP_RES) );
+	g_pApp->Send( this->GetHandle() , &packet );
 }
