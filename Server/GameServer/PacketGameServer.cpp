@@ -2974,22 +2974,94 @@ void	CClientSession::SendDragonBallRewardReq(CNtlPacket * pPacket, CGameServer *
 		pDBtData->byBallType, pDBtData->byRewardCategoryDepth, pDBtData->byRewardType, pDBtData->dwRewardZenny, pDBtData->rewardCategoryDialog,pDBtData->rewardCategoryName,
 		pDBtData->rewardDialog1, pDBtData->rewardDialog2,pDBtData->rewardLinkTblidx, pDBtData->rewardName, pDBtData->tblidx);
 	printf("Reward have been found.\nReward id = %d.\n", req->rewardTblidx);
-	//---------------SkillTable Learning-----------------------------------------------------------------------//
-	//This part was made to learn Dragon Buffs Skills or charId
+
+	//Wish's table
 	CSkillTable* pSkillTable = app->g_pTableContainer->GetSkillTable();
-	sSKILL_TBLDAT* pSkillData = (sSKILL_TBLDAT*)pSkillTable->FindData(pDBtData->rewardLinkTblidx);
-	if (pSkillData->tblidx != INVALID_TBLIDX)
+	sSKILL_TBLDAT* pSkillData = (sSKILL_TBLDAT*)pSkillTable->FindData(pDBtData->rewardLinkTblidx);	
+	CItemTable* pItemTable = app->g_pTableContainer->GetItemTable();
+	sITEM_TBLDAT * pItemData = (sITEM_TBLDAT*)pItemTable->FindData(pDBtData->rewardLinkTblidx);
+
+	switch (pDBtData->byRewardType)
 	{
-		CNtlPacket packet3(sizeof(sGU_SKILL_LEARNED_NFY));
-		sGU_SKILL_LEARNED_NFY * res3 = (sGU_SKILL_LEARNED_NFY *)packet3.GetPacketData();
-		//NEVER SEND SLOTID BECAUSE IF WAS DRAGON BUFF YOUR CLIENT WILL BE CRASH...
-		res3->wOpCode = GU_SKILL_LEARNED_NFY;
-		res3->skillId = pSkillData->tblidx;		
-		app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, 0);
-		packet3.SetPacketLen(sizeof(sGU_SKILL_LEARNED_NFY));
-		g_pApp->Send(this->GetHandle(), &packet3);
+		case DRAGONBALL_REWARD_TYPE_SKILL:{
+				CNtlPacket packet3(sizeof(sGU_SKILL_LEARNED_NFY));
+				sGU_SKILL_LEARNED_NFY * res3 = (sGU_SKILL_LEARNED_NFY *)packet3.GetPacketData();
+				//NEVER SEND SLOTID BECAUSE IF WAS DRAGON BUFF YOUR CLIENT WILL BE CRASH...
+				res3->wOpCode = GU_SKILL_LEARNED_NFY;
+				res3->skillId = pSkillData->tblidx;
+				res3->bySlot = pSkillData->bySlot_Index;
+				app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, pSkillData->bySlot_Index, pSkillData->wKeep_Time, 0);
+				packet3.SetPacketLen(sizeof(sGU_SKILL_LEARNED_NFY));
+				g_pApp->Send(this->GetHandle(), &packet3);
+		}
+		break;
+		case DRAGONBALL_REWARD_TYPE_ITEM:{
+				CNtlPacket packet4(sizeof(sGU_ITEM_PICK_RES));
+				sGU_ITEM_PICK_RES * res4 = (sGU_ITEM_PICK_RES*)packet4.GetPacketData();
+				res4->itemTblidx = pItemData->tblidx;
+				res4->wOpCode = GU_ITEM_PICK_RES;
+				res4->wResultCode = GAME_SUCCESS;
+				int ItemPos = 0;
+
+				app->db->prepare("SELECT * FROM items WHERE owner_ID = ? AND place=1 ORDER BY pos ASC");
+				app->db->setInt(1, this->plr->pcProfile->charId);
+				app->db->execute();
+				int k = 0;
+				//Need a right loop 
+				while (app->db->fetch())
+				{
+					if (app->db->getInt("pos") < NTL_MAX_ITEM_SLOT)
+						ItemPos = app->db->getInt("pos") + 1;
+					else
+						ItemPos = app->db->getInt("pos");
+					k++;
+				}
+				app->db->prepare("CALL BuyItemFromShop (?,?,?,?,?, @unique_iID)");//this basicaly a insert into...
+				app->db->setInt(1, pItemData->tblidx);
+				app->db->setInt(2, this->plr->pcProfile->charId);
+				app->db->setInt(3, ItemPos);
+				app->db->setInt(4, pItemData->byRank);
+				app->db->setInt(5, pItemData->byDurability);
+				app->db->execute();
+				app->db->execute("SELECT @unique_iID");
+				app->db->fetch();
+
+				CNtlPacket packet2(sizeof(sGU_ITEM_CREATE));
+				sGU_ITEM_CREATE * res2 = (sGU_ITEM_CREATE *)packet2.GetPacketData();
+
+				res2->bIsNew = true;
+				res2->wOpCode = GU_ITEM_CREATE;
+				res2->handle = app->db->getInt("@unique_iID");
+				res2->sItemData.charId = this->GetavatarHandle();
+				res2->sItemData.itemNo = pItemData->tblidx;
+				res2->sItemData.byStackcount = pItemData->byMax_Stack;//1 is need to be default,you can use byMaxStack(but if you choose senzubeans the correct is receive 3(like dragon ball Saga) but give you 20
+				res2->sItemData.itemId = app->db->getInt("@unique_iID");
+				res2->sItemData.byPlace = 1;
+				res2->sItemData.byPosition = ItemPos;
+				res2->sItemData.byCurrentDurability = pItemData->byDurability;
+				res2->sItemData.byRank = pItemData->byRank;
+
+				packet2.SetPacketLen(sizeof(sGU_ITEM_CREATE));
+				packet4.SetPacketLen(sizeof(sGU_ITEM_PICK_RES));
+				g_pApp->Send(this->GetHandle(), &packet2);
+				g_pApp->Send(this->GetHandle(), &packet4);
+		}
+		break;
+		case DRAGONBALL_REWARD_TYPE_ZENNY:{
+				CNtlPacket packet5(sizeof(sGU_UPDATE_CHAR_ZENNY));
+				sGU_UPDATE_CHAR_ZENNY * res5 = (sGU_UPDATE_CHAR_ZENNY *)packet5.GetPacketData();
+				res5->dwZenny = pDBtData->tblidx;//by analazying this is the ammount....				
+				res5->bIsNew = true;
+				res5->handle = this->GetavatarHandle();
+				res5->byChangeType = 0;//never mind
+				res5->wOpCode = GU_UPDATE_CHAR_ZENNY;
+				packet5.SetPacketLen(sizeof(sGU_UPDATE_CHAR_ZENNY));
+				g_pApp->Send(this->GetHandle(), &packet5);
+		}
+		break;
 	}
-	//---------------End Skill Learn---------------------------------------------------------------------------//
+		
+	//---------------End Wish's List-------------------------------------------------------------------------//
 	res->hObject = req->hObject;
 	res->wOpCode = GU_DRAGONBALL_REWARD_RES;
 	res->wResultCode = GAME_SUCCESS;
@@ -3036,8 +3108,7 @@ void CClientSession::SendCharSkillUpgrade(CNtlPacket * pPacket, CGameServer * ap
 	app->db->fetch();
 
 	int skillID = app->db->getInt("skill_id");
-	sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skillID));
- 	
+	sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skillID)); 	
  	if (pSkillData->dwNextSkillTblidx)
  	{
  		CNtlPacket packet(sizeof(sGU_SKILL_UPGRADE_RES));
