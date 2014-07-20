@@ -42,6 +42,7 @@
 #include "LegendaryDropTable.h"
 #include "NormalDropTable.h"
 #include "SuperiorDropTable.h"
+#include "MobMovePatternTable.h"
 // END TABLES
 #include "PlayerInfos.h"
 #include "MobActivity.h"
@@ -199,7 +200,7 @@ public:
 
 	void						SendShopSkillReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharLearnSkillReq(CNtlPacket * pPacket, CGameServer * app);
-	//Items
+
 	void						SendItemMoveReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendItemDeleteReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendItemStackReq(CNtlPacket * pPacket, CGameServer * app);
@@ -212,15 +213,13 @@ public:
 	void						SendDragonBallCheckReq(CNtlPacket * pPacket, CGameServer * app);
 	void						SendDragonBallRewardReq(CNtlPacket * pPacket, CGameServer * app);
 	// SKILL
-	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app);
+	void						SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app, int _skillid);
 	void						SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app);
 	void						SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app);
-	//HTB
-	void						SendCharSkillHTBLearn(CNtlPacket * pPacket, CGameServer * app);
 	// QuickSlots
 	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);
  	void						SendCharDelQuickSlot(CNtlPacket * pPacket, CGameServer * app);
-	
+
 	// MUDOSA
 	void						SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app);
 	// BANK
@@ -235,6 +234,9 @@ public:
 	void						SendPlayerLevelUpCheck(CGameServer * app, int exp);
 	// QUEST
 	void						SendPlayerQuestReq(CNtlPacket * pPacket, CGameServer * app);
+	// DUEL
+	void						SendFreeBattleReq(CNtlPacket * pPacket, CGameServer * app);
+	void						SendFreeBattleAccpetReq(CNtlPacket * pPacket, CGameServer * app);
 	//Game Server functions
 	sGU_OBJECT_CREATE			characterspawnInfo;
 	//

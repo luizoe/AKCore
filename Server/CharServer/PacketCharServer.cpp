@@ -123,7 +123,7 @@ void CClientSession::SendCharLoadReq(CNtlPacket * pPacket, CCharServer * app)
 		res->sPcData[i].byHairColor = app->db->getInt("HairColor");
 		res->sPcData[i].bySkinColor = app->db->getInt("SkinColor");
 		res->sPcData[i].byLevel = app->db->getInt("Level");
-		res->sPcData[i].bTutorialFlag = false;
+		res->sPcData[i].bTutorialFlag = app->db->getInt("TutorialFlag");
 		res->sPcData[i].bNeedNameChange = app->db->getBoolean("NameChange");
 		res->sPcData[i].dwMoney = app->db->getInt("Money");
 		res->sPcData[i].dwMoneyBank = app->db->getInt("MoneyBank");

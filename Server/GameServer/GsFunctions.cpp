@@ -19,6 +19,14 @@ bool	GsFunctionsClass::DeleteItemByUIdPlacePos(CNtlPacket * pPacket, CClientSess
 
 	return true;
 }
+int     GsFunctionsClass::GetTotalSlotSkill(int charID)
+{
+	CGameServer * app = (CGameServer*)NtlSfxGetApp();
+	app->db->prepare("SELECT * FROM skills WHERE owner_id = ?");
+	app->db->setInt(1, charID);
+	app->db->execute();
+	return app->db->rowsCount();
+}
 void	GsFunctionsClass::DebugSkillType(BYTE skillActType)
 {
 	switch (skillActType)
@@ -72,8 +80,44 @@ DWORD	GsFunctionsClass::CalculePowerLevel(sMOB_TBLDAT* pMOBtData)
 		5, pMOBtData->wAttack_Speed_Rate,pMOBtData->wBasic_LP,pMOBtData->wBasic_EP, pMOBtData->wBasic_LP, pMOBtData->wBasic_EP,1,pMOBtData->byLevel, pMOBtData->byGrade);
 }
 
+void	GsFunctionsClass::printError(const char* err)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    WORD saved_attributes;
+    /* Save current attributes */
+    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+    saved_attributes = consoleInfo.wAttributes;
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+    printf("%s\n", err);
+    /* Restore original attributes */
+    SetConsoleTextAttribute(hConsole, saved_attributes);
+}
 
+void	GsFunctionsClass::printOk(const char* ok)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    WORD saved_attributes;
+    /* Save current attributes */
+    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+    saved_attributes = consoleInfo.wAttributes;
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+    printf("%s\n", ok);
+    /* Restore original attributes */
+    SetConsoleTextAttribute(hConsole, saved_attributes);
+}
 
-
-
-
+void	GsFunctionsClass::printDebug(const char* dbg)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    WORD saved_attributes;
+    /* Save current attributes */
+    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+    saved_attributes = consoleInfo.wAttributes;
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+    printf("%s\n", dbg);
+    /* Restore original attributes */
+    SetConsoleTextAttribute(hConsole, saved_attributes);
+}

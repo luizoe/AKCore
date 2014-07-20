@@ -16,7 +16,6 @@ bool	QueryClass::InsertNewSkill(TBLIDX SkillID, int CharID, BYTE SlotID, WORD Ti
 
 	return true;
 }
-
 bool	QueryClass::CheckIfSkillAlreadyLearned(TBLIDX SkillID, int CharID)
 {
 	CGameServer * app = (CGameServer*) NtlSfxGetApp();
