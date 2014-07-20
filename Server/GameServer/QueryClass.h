@@ -33,7 +33,7 @@ public:
 	bool						UpdateCharAwayStatus(RwUInt32 CharID, RwUInt32 AwayStatus);
 	bool						SetMailAccept(RwUInt32 CharID, RwUInt32 MailID);
 	bool						UpdateSPPoint(RwUInt32 CharID, RwUInt32 point);
-	bool						InsertRemoveQuickSlot(TBLIDX SkillID, BYTE SlotID,BYTE PlaceID, int CharID);
+	bool						InsertRemoveQuickSlot(TBLIDX SkillID, BYTE SlotID, int CharID);
 
 };
 

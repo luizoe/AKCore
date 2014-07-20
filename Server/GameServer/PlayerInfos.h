@@ -16,6 +16,7 @@ public:
 		this->pcProfile = new sPC_PROFILE;
 		this->sCharState = new sCHARSTATE;
 		this->CurRPBall = 0;
+		LastPartyHandle = -1;
 	};
 	~PlayerInfos(){};
 	sPC_PROFILE		*pcProfile;
@@ -163,6 +164,7 @@ public:
 		if (this->pcProfile->byLevel == 50)
 			this->CurRPBall++;
 	}
+	void		LastPartyInvited(){};
 private:
 	MySQLConnWrapper			*db;
 public:
@@ -197,4 +199,5 @@ public: // THIS NEED BE BE PRIVATE IN THE FUTUR
 	float			fLevel_Up_Dex;
 	float			fLevel_Up_Sol;
 	float			fLevel_Up_Eng;
+	int					LastPartyHandle;
 };

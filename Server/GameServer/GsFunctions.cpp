@@ -19,6 +19,33 @@ bool	GsFunctionsClass::DeleteItemByUIdPlacePos(CNtlPacket * pPacket, CClientSess
 
 	return true;
 }
+void	GsFunctionsClass::DebugSkillType(BYTE skillActType)
+{
+	switch (skillActType)
+	{
+	case SKILL_ACTIVE_TYPE_DD:
+		printf("SKILL_ACTIVE_TYPE_DD\n");
+		break;
+	case SKILL_ACTIVE_TYPE_BB:
+		printf("SKILL_ACTIVE_TYPE_BB\n");
+		break;
+	case SKILL_ACTIVE_TYPE_CB:
+		printf("SKILL_ACTIVE_TYPE_CB\n");
+		break;
+	case SKILL_ACTIVE_TYPE_DB:
+		printf("SKILL_ACTIVE_TYPE_DB\n");
+		break;
+	case SKILL_ACTIVE_TYPE_DC:
+		printf("SKILL_ACTIVE_TYPE_DC\n");
+		break;
+	case SKILL_ACTIVE_TYPE_DH:
+		printf("SKILL_ACTIVE_TYPE_DH\n");
+		break;
+	case SKILL_ACTIVE_TYPE_DOT:
+		printf("SKILL_ACTIVE_TYPE_DOT\n");
+		break;
+	}
+}
 bool	GsFunctionsClass::UpdateCharMoney(CNtlPacket * pPacket, CClientSession * pSession, RwUInt32 ChangeType, RwUInt32 MoneyAmount, RwUInt32 AvatarHandle)
 {
 	CGameServer * app = (CGameServer*) NtlSfxGetApp();

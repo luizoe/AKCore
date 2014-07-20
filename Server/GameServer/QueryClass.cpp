@@ -190,14 +190,13 @@ bool	QueryClass::UpdateSPPoint(RwUInt32 CharID, RwUInt32 point)
 	return true;
 }
 
-bool	QueryClass::InsertRemoveQuickSlot(TBLIDX SkillID, BYTE SlotID, BYTE PlaceID, int CharID)
+bool	QueryClass::InsertRemoveQuickSlot(TBLIDX SkillID, BYTE SlotID, int CharID)
  {
  	CGameServer * app = (CGameServer*)NtlSfxGetApp();
  	std::string query = "UPDATE quickslot SET slotId_" +std::to_string(SlotID);
- 	app->db->prepare(query+" = ? AND placeID = ? WHERE charId=?");
+ 	app->db->prepare(query+" = ? WHERE charId=?");
  	app->db->setInt(1, SkillID);
-	app->db->setInt(2, PlaceID);
- 	app->db->setInt(3, CharID);
+ 	app->db->setInt(2, CharID);
  	
  	app->db->execute();
  	return true;

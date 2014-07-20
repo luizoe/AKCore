@@ -338,7 +338,6 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_ITEM_USE_REQ:
 		{
 			printf("--- UG_ITEM_USE_REQ --- \n");
-			//CClientSession::SendItemUseReq(pPacket, app);
 		}
 			break;
 		case UG_ITEM_UPGRADE_REQ:
