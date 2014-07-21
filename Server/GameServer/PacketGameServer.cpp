@@ -2372,10 +2372,11 @@ void CClientSession::SendCharLearnSkillReq(CNtlPacket * pPacket, CGameServer * a
 										// Skill learned notification
 										CNtlPacket packet2(sizeof(sGU_SKILL_LEARNED_NFY));
 										sGU_SKILL_LEARNED_NFY * res2 = (sGU_SKILL_LEARNED_NFY *)packet2.GetPacketData();
-
+										iSkillCount++;//don't send this directly if you learned SSJ first...because we always are sending 1...nevermind :P
 										res2->wOpCode = GU_SKILL_LEARNED_NFY;
 										res2->skillId = pSkillData->tblidx;
-										res2->bySlot = (iSkillCount++);
+										res2->bySlot = iSkillCount;
+
 										app->qry->InsertNewSkill(pSkillData->tblidx, this->plr->pcProfile->charId, iSkillCount, pSkillData->wKeep_Time, pSkillData->wNext_Skill_Train_Exp);
 										this->plr->pcProfile->dwZenny -= pSkillData->dwRequire_Zenny;
 										this->plr->pcProfile->dwSpPoint -= pSkillData->wRequireSP;
