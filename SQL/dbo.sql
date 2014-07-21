@@ -1,22 +1,22 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : Dragonball dbase
-Source Server Version : 50534
+Source Server         : yolo
+Source Server Version : 50617
 Source Host           : localhost:3306
 Source Database       : dbo
 
 Target Server Type    : MYSQL
-Target Server Version : 50534
+Target Server Version : 50617
 File Encoding         : 65001
 
-Date: 2014-07-18 19:40:48
+Date: 2014-07-17 21:26:41
 */
 
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
--- Table structure for `accounts`
+-- Table structure for accounts
 -- ----------------------------
 DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE `accounts` (
@@ -26,15 +26,10 @@ CREATE TABLE `accounts` (
   `acc_status` enum('block','active') DEFAULT 'active',
   `email` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`AccountID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of accounts
--- ----------------------------
-INSERT INTO `accounts` VALUES ('1', 'luizoe', 'luizoe', 'active', 'luizantcosta@gmail.com');
-
--- ----------------------------
--- Table structure for `bannword`
+-- Table structure for bannword
 -- ----------------------------
 DROP TABLE IF EXISTS `bannword`;
 CREATE TABLE `bannword` (
@@ -44,11 +39,7 @@ CREATE TABLE `bannword` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of bannword
--- ----------------------------
-
--- ----------------------------
--- Table structure for `bind`
+-- Table structure for bind
 -- ----------------------------
 DROP TABLE IF EXISTS `bind`;
 CREATE TABLE `bind` (
@@ -57,15 +48,10 @@ CREATE TABLE `bind` (
   `WorldID` tinyint(3) NOT NULL,
   `BindObjectTblIdx` int(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of bind
--- ----------------------------
-INSERT INTO `bind` VALUES ('1', '1', '1', '6');
-
--- ----------------------------
--- Table structure for `characters`
+-- Table structure for characters
 -- ----------------------------
 DROP TABLE IF EXISTS `characters`;
 CREATE TABLE `characters` (
@@ -211,15 +197,10 @@ CREATE TABLE `characters` (
   `MailIsAway` int(10) DEFAULT NULL,
   `IsOnline` int(10) DEFAULT '0',
   PRIMARY KEY (`CharID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of characters
--- ----------------------------
-INSERT INTO `characters` VALUES ('1', '[ADM]MastaTrick', '1', '30', '75', '1000', '0', '8', '', '0', '1', '1', '1', '1', '1', '4681.00000', '-62.00000', '4088.00000', '0.00000', '0.00000', '0.00000', '1', '1', '10000', '10000', '1', '', '', '0', '0', '99', '', '0', null, '65', '65', '52', '52', '52', '52', '46', '46', '49', '49', '43', '43', '0', '0', '0', '0', '100', '52685', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '60', '0', '0', '0', '48', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '10', '10', '10', '10', '8.00000', '0', '0', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0', '0', '0', '0', '0', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '0.00000', '1.00000', '1.00000', '0.00000', '0.00000', '0', '100', '100', '6', null, '0');
-
--- ----------------------------
--- Table structure for `guilds`
+-- Table structure for guilds
 -- ----------------------------
 DROP TABLE IF EXISTS `guilds`;
 CREATE TABLE `guilds` (
@@ -236,11 +217,7 @@ CREATE TABLE `guilds` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of guilds
--- ----------------------------
-
--- ----------------------------
--- Table structure for `guild_members`
+-- Table structure for guild_members
 -- ----------------------------
 DROP TABLE IF EXISTS `guild_members`;
 CREATE TABLE `guild_members` (
@@ -254,11 +231,7 @@ CREATE TABLE `guild_members` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of guild_members
--- ----------------------------
-
--- ----------------------------
--- Table structure for `items`
+-- Table structure for items
 -- ----------------------------
 DROP TABLE IF EXISTS `items`;
 CREATE TABLE `items` (
@@ -274,34 +247,10 @@ CREATE TABLE `items` (
   PRIMARY KEY (`id`),
   KEY `owner_id_idx` (`owner_id`),
   KEY `item_vnum_index` (`tblidx`)
-) ENGINE=MyISAM AUTO_INCREMENT=1400021 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=1400000 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of items
--- ----------------------------
-INSERT INTO `items` VALUES ('1400000', '19901', '1', '0', '0', '0', '1', '10', '1');
-INSERT INTO `items` VALUES ('1400001', '17001', '1', '7', '5', '1', '1', '100', '1');
-INSERT INTO `items` VALUES ('1400002', '14001', '1', '7', '2', '1', '1', '100', '1');
-INSERT INTO `items` VALUES ('1400003', '14002', '1', '7', '3', '1', '1', '100', '1');
-INSERT INTO `items` VALUES ('1400004', '14003', '1', '7', '4', '1', '1', '100', '1');
-INSERT INTO `items` VALUES ('1400005', '18011', '1', '1', '7', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400007', '200001', '1', '1', '0', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400008', '200002', '1', '1', '1', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400009', '200003', '1', '1', '2', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400010', '200004', '1', '1', '3', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400011', '200005', '1', '1', '4', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400012', '200006', '1', '1', '5', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400013', '200007', '1', '1', '6', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400014', '18021', '1', '1', '8', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400015', '18021', '1', '1', '10', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400016', '18022', '1', '1', '11', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400017', '18021', '1', '1', '12', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400018', '18021', '1', '1', '13', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400019', '18021', '1', '1', '14', '1', '0', '255', '1');
-INSERT INTO `items` VALUES ('1400020', '18021', '1', '1', '15', '1', '0', '255', '1');
-
--- ----------------------------
--- Table structure for `mail`
+-- Table structure for mail
 -- ----------------------------
 DROP TABLE IF EXISTS `mail`;
 CREATE TABLE `mail` (
@@ -326,11 +275,7 @@ CREATE TABLE `mail` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of mail
--- ----------------------------
-
--- ----------------------------
--- Table structure for `portals`
+-- Table structure for portals
 -- ----------------------------
 DROP TABLE IF EXISTS `portals`;
 CREATE TABLE `portals` (
@@ -348,11 +293,7 @@ CREATE TABLE `portals` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of portals
--- ----------------------------
-
--- ----------------------------
--- Table structure for `quickslot`
+-- Table structure for quickslot
 -- ----------------------------
 DROP TABLE IF EXISTS `quickslot`;
 CREATE TABLE `quickslot` (
@@ -405,17 +346,11 @@ CREATE TABLE `quickslot` (
   `slotId_45` int(10) unsigned DEFAULT '0',
   `slotId_46` int(10) unsigned DEFAULT '0',
   `slotId_47` int(10) unsigned DEFAULT '0',
-  `placeID` int(10) DEFAULT NULL,
   PRIMARY KEY (`pkQuick`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of quickslot
--- ----------------------------
-INSERT INTO `quickslot` VALUES ('1', '1', null, null, '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', null);
-
--- ----------------------------
--- Table structure for `skills`
+-- Table structure for skills
 -- ----------------------------
 DROP TABLE IF EXISTS `skills`;
 CREATE TABLE `skills` (
@@ -428,20 +363,14 @@ CREATE TABLE `skills` (
   `TimeRemaining` int(15) unsigned NOT NULL,
   `Exp` int(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
--- Records of skills
--- ----------------------------
-INSERT INTO `skills` VALUES ('3', '21011', '1', '', '0', '15', '0', '0');
-INSERT INTO `skills` VALUES ('4', '99100', '1', '', '0', '201', '1800', '0');
-
--- ----------------------------
--- Procedure structure for `AuthLogin`
+-- Procedure structure for AuthLogin
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `AuthLogin`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `AuthLogin`(IN m_szUserID VARCHAR(20), IN m_szUserPW VARCHAR(20), OUT m_dwAccountID INT, OUT m_nResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `AuthLogin`(IN m_szUserID VARCHAR(20), IN m_szUserPW VARCHAR(20), OUT m_dwAccountID INT, OUT m_nResultCode INT)
 BEGIN
 
 	DECLARE dec_pw VARCHAR(100);
@@ -470,11 +399,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `BuyItemFromShop`
+-- Procedure structure for BuyItemFromShop
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `BuyItemFromShop`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `BuyItemFromShop`(IN tblidx INT, IN CharID INT, IN pos INT,IN rank INT, IN durability INT, OUT unique_iID INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `BuyItemFromShop`(IN tblidx INT, IN CharID INT, IN pos INT,IN rank INT, IN durability INT, OUT unique_iID INT)
 BEGIN
 
 
@@ -491,11 +420,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `ChangeCharname`
+-- Procedure structure for ChangeCharname
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `ChangeCharname`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `ChangeCharname`(IN awchCharName VARCHAR(16), IN char_Id INT, OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `ChangeCharname`(IN awchCharName VARCHAR(16), IN char_Id INT, OUT wResultCode INT)
 BEGIN
 
 		IF(SELECT EXISTS(SELECT 1 FROM characters WHERE CharName = awchCharName)) THEN
@@ -524,11 +453,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `ChangeGuildMaster`
+-- Procedure structure for ChangeGuildMaster
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `ChangeGuildMaster`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `ChangeGuildMaster`(IN characterID INT, IN guildname VARCHAR(30), IN mastercharID INT, OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `ChangeGuildMaster`(IN characterID INT, IN guildname VARCHAR(30), IN mastercharID INT, OUT wResultCode INT)
 BEGIN
 
 DECLARE issecguildmaster INT;
@@ -567,11 +496,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `CharBind`
+-- Procedure structure for CharBind
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `CharBind`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `CharBind`(IN characterID INT, IN bindObjectTblidx INT, OUT currentWorldID INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `CharBind`(IN characterID INT, IN bindObjectTblidx INT, OUT currentWorldID INT)
 BEGIN
 
 DECLARE currentWorldID INT;
@@ -595,11 +524,10 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `CharCreate`
+-- Procedure structure for CharCreate
 -- ----------------------------
-DROP PROCEDURE IF EXISTS `CharCreate`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `CharCreate`(IN awchCharName VARCHAR(16), IN byRace INT, IN byClass INT, IN byGender INT, IN byFace INT, IN byHair INT, IN byHairColor INT, IN bySkinColor INT, IN account_id INT, OUT char_id INT, OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `CharCreate`(IN awchCharName VARCHAR(16), IN byRace INT, IN byClass INT, IN byGender INT, IN byFace INT, IN byHair INT, IN byHairColor INT, IN bySkinColor INT, IN account_id INT, OUT char_id INT, OUT wResultCode INT)
 BEGIN
 
 		IF(SELECT EXISTS(SELECT 1 FROM characters WHERE CharName = awchCharName)) THEN
@@ -619,34 +547,69 @@ BEGIN
 					(awchCharName,account_id,byRace,byClass,byGender,byFace,byHair,byHairColor,bySkinColor, 10000);
 
 					SET char_id = LAST_INSERT_ID();
-					INSERT INTO quickslot(`charId`)
-					VALUES(char_id);
+					Insert into quickslot (charId) values(char_id);
 					INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
 					VALUES(char_id, 19901, 0, 0, 0, 1, 10),
 						    (char_id, 17001, 1, 3, 1, 1, 100);
 
 
 					IF (byRace = 0) THEN
-						INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
-						VALUES(char_id,  14001, 7, 2, 1, 1, 100),
+						IF (byClass = 0) THEN
+							INSERT INTO skills (`skill_id`, `owner_id`, RpBonusAuto, `RpBonusType`, `SlotID`, `TimeRemaining`, `Exp`)
+							VALUES (10111,char_id,0,0,1,0,0);
+							INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
+							VALUES(char_id,  14001, 7, 2, 1, 1, 100),
 							    (char_id,  14002, 7, 3, 1, 1, 100),
 						    	(char_id,  14003, 7, 4, 1, 1, 100);
-								UPDATE characters SET CurLocX = 4467, CurLocY = -40, CurLocZ = 3951 WHERE CharID = char_id LIMIT 1;
+						END IF;
+						IF (byClass = 1) THEN
+						INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
+							VALUES(char_id,  14301, 7, 2, 1, 1, 100),
+							    (char_id,  14302, 7, 3, 1, 1, 100),
+						    	(char_id,  14303, 7, 4, 1, 1, 100);
+						INSERT INTO skills (`skill_id`, `owner_id`, `SlotID`)
+							VALUES(110111,char_id,1);
+						END IF;
+						UPDATE characters SET CurLocX = 4467, CurLocY = -40, CurLocZ = 3951 WHERE CharID = char_id LIMIT 1;
 					END IF;
 
 					IF (byRace = 1) THEN
-						INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
-						VALUES(char_id,  23001, 7, 2, 1, 1, 100),
-							    (char_id,  23002, 7, 3, 1, 1, 100),
-						  	  (char_id,  23003, 7, 4, 1, 1, 100);
-							UPDATE characters SET CurLocX = 3131, CurLocY = -32, CurLocZ = -2755 WHERE CharID = char_id LIMIT 1;
+					UPDATE characters SET CurLocX = 3131, CurLocY = -32, CurLocZ = -2755 WHERE CharID = char_id LIMIT 1;
+						IF (byClass = 3) THEN
+							INSERT INTO skills (`skill_id`, `owner_id`, RpBonusAuto, `RpBonusType`, `SlotID`, `TimeRemaining`, `Exp`)
+							VALUES (310111,char_id,0,0,1,0,0);
+							INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
+							VALUES(char_id,  23001, 7, 2, 1, 1, 100),
+								(char_id,  23002, 7, 3, 1, 1, 100),
+								(char_id,  23003, 7, 4, 1, 1, 100);
+							END IF;
+						IF (byClass = 4) THEN
+							INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
+							VALUES(char_id,  13301, 7, 2, 1, 1, 100),
+								(char_id,  13302, 7, 3, 1, 1, 100),
+						    	(char_id,  13303, 7, 4, 1, 1, 100);
+							INSERT INTO skills (`skill_id`, `owner_id`, `SlotID`)
+							VALUES(410111,char_id,1);
+						END IF;
 					END IF;
-						IF (byRace = 2) THEN
-						INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
-						VALUES(char_id,  15001, 7, 2, 1, 1, 100),
+					IF (byRace = 2) THEN
+						IF (byClass = 5) THEN
+							INSERT INTO skills (`skill_id`, `owner_id`, RpBonusAuto, `RpBonusType`, `SlotID`, `TimeRemaining`, `Exp`)
+							VALUES (510111,char_id,0,0,1,0,0);
+							INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
+							VALUES(char_id,  15001, 7, 2, 1, 1, 100),
 							    (char_id,  15002, 7, 3, 1, 1, 100),
 						    	(char_id,  15003, 7, 4, 1, 1, 100);
-							UPDATE characters SET CurLocX = 5775, CurLocY = -74, CurLocZ = -4032 WHERE CharID = char_id LIMIT 1;
+						END IF;
+						IF (byClass = 6) THEN
+							INSERT INTO skills (`skill_id`, `owner_id`, RpBonusAuto, `RpBonusType`, `SlotID`, `TimeRemaining`, `Exp`)
+							VALUES (610111,char_id,0,0,1,0,0);
+							INSERT INTO items (`owner_id`, `tblidx`, `place`, `pos`, `count`, `rank`, `durability`)
+							VALUES(char_id,  15301, 7, 2, 1, 1, 100),
+							    (char_id,  15302, 7, 3, 1, 1, 100),
+						    	(char_id,  15303, 7, 4, 1, 1, 100);
+						END IF;
+					UPDATE characters SET CurLocX = 5775, CurLocY = -74, CurLocZ = -4032 WHERE CharID = char_id LIMIT 1;
 					END IF;
 
 				SET wResultCode = 200;
@@ -655,16 +618,15 @@ BEGIN
 
 		END IF;
 
-END
-;;
+END;;
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `DisbandGuild`
+-- Procedure structure for DisbandGuild
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `DisbandGuild`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `DisbandGuild`(IN guild_name VARCHAR(30), IN characterID INT, OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `DisbandGuild`(IN guild_name VARCHAR(30), IN characterID INT, OUT wResultCode INT)
 BEGIN
 
 	DECLARE guild_ID INT;
@@ -692,11 +654,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `GuildCreate`
+-- Procedure structure for GuildCreate
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `GuildCreate`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `GuildCreate`(IN c_guild_name VARCHAR(30), IN characterID INT, OUT wResultCode INT, OUT cguildid INT, OUT charactername VARCHAR(30))
+CREATE DEFINER=`root`@`%` PROCEDURE `GuildCreate`(IN c_guild_name VARCHAR(30), IN characterID INT, OUT wResultCode INT, OUT cguildid INT, OUT charactername VARCHAR(30))
 BEGIN
 
 
@@ -762,11 +724,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `GuildInfo`
+-- Procedure structure for GuildInfo
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `GuildInfo`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `GuildInfo`(IN characterID INT, OUT guild_id INT, OUT guild_name VARCHAR(30), OUT guild_master INT, OUT guild_notice VARCHAR(256), OUT guild_rep INT, OUT second_guild_master INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `GuildInfo`(IN characterID INT, OUT guild_id INT, OUT guild_name VARCHAR(30), OUT guild_master INT, OUT guild_notice VARCHAR(256), OUT guild_rep INT, OUT second_guild_master INT)
 BEGIN
 
 DECLARE current_guild INT;
@@ -789,11 +751,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `KickGuild`
+-- Procedure structure for KickGuild
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `KickGuild`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `KickGuild`(IN characterID INT, OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `KickGuild`(IN characterID INT, OUT wResultCode INT)
 BEGIN
 
 DECLARE isgmaster INT;
@@ -827,11 +789,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `LeaveGuild`
+-- Procedure structure for LeaveGuild
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `LeaveGuild`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `LeaveGuild`(IN characterID INT, OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `LeaveGuild`(IN characterID INT, OUT wResultCode INT)
 BEGIN
 
 DECLARE isgmaster INT;
@@ -875,11 +837,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `NewSecondGuildMaster`
+-- Procedure structure for NewSecondGuildMaster
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `NewSecondGuildMaster`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `NewSecondGuildMaster`(IN characterID INT, IN guild_name VARCHAR(30), OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `NewSecondGuildMaster`(IN characterID INT, IN guild_name VARCHAR(30), OUT wResultCode INT)
 BEGIN
 
 IF(SELECT EXISTS(SELECT 1 FROM guild_members WHERE MemberID = characterID) )THEN
@@ -900,11 +862,11 @@ END
 DELIMITER ;
 
 -- ----------------------------
--- Procedure structure for `UpdateGuildNotice`
+-- Procedure structure for UpdateGuildNotice
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `UpdateGuildNotice`;
 DELIMITER ;;
-CREATE DEFINER=`root`@`mastatricky-pc` PROCEDURE `UpdateGuildNotice`(IN characterID INT,  IN awchNotice VARCHAR(256), OUT wResultCode INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `UpdateGuildNotice`(IN characterID INT,  IN awchNotice VARCHAR(256), OUT wResultCode INT)
 BEGIN
 
 	IF(SELECT EXISTS(SELECT 1 FROM guilds WHERE GuildMaster = characterID OR GuildSecondMaster = characterID)) THEN
