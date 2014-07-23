@@ -999,6 +999,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_TRANSFORM_CANCEL_REQ:
 		{
 			printf("--- UG_TRANSFORM_CANCEL_REQ --- \n");
+			CClientSession::SendCharSkillTransformCancel(pPacket, app);
 		}
 			break;
 		case UG_SHOP_ITEM_IDENTIFY_REQ:
