@@ -7,12 +7,10 @@
 #include "NtlPacketUT.h"
 #include "GameServer.h"
 
-
 typedef std::list<SBattleData*> ListAttackBegin;
 typedef ListAttackBegin::iterator BATTLEIT;
 ListAttackBegin				m_listAttackBegin;
 SSkillData *pSkillData;
-
 
 //--------------------------------------------------------------------------------------//
 //		Log into Game Server
@@ -111,7 +109,6 @@ void CClientSession::SendAvatarCharInfo(CNtlPacket * pPacket, CGameServer * app)
 	res->wOpCode = GU_AVATAR_CHAR_INFO;
 	res->handle = this->plr->GetAvatarandle();
 	res->sPcProfile.tblidx = pTblData->tblidx;
-	res->sPcProfile.bChangeClass = app->db->getBoolean("ChangeClass");
 	res->sPcProfile.bIsAdult = app->db->getBoolean("Adult");
 	res->sPcProfile.charId = app->db->getInt("CharID");
 	wcscpy_s(res->sPcProfile.awchName, NTL_MAX_SIZE_CHAR_NAME_UNICODE, s2ws(app->db->getString("CharName")).c_str() );
@@ -249,31 +246,26 @@ void CClientSession::SendSlotInfo(CNtlPacket * pPacket, CGameServer * app)
  
 	CNtlPacket packet(sizeof(sGU_QUICK_SLOT_INFO));
 	sGU_QUICK_SLOT_INFO * res = (sGU_QUICK_SLOT_INFO *)packet.GetPacketData();
-	
-	app->db->fetch();
-	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
-	
-	RwInt32 i = 0 ;
-	int skill= 0;
-	int slotID = 0;
-	while (i<=32)
-	{
-		std::string query = "slotId_" + std::to_string(i);
-		skill = app->db->getInt(query.c_str());
-		res->asQuickSlotData[i].bySlot = 255;
-		res->asQuickSlotData[i].tblidx = 0;
-		res->asQuickSlotData[i].byType = QUICK_SLOT_TYPE_FIRST;
-		sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skill));
-		if (pSkillData)
-		{
-			res->asQuickSlotData[i].bySlot = i;
-			res->asQuickSlotData[i].tblidx = pSkillData->tblidx;
-			res->asQuickSlotData[i].byType = QUICK_SLOT_TYPE_SKILL;			
-		}	
-		i++;
-	}
 	res->wOpCode = GU_QUICK_SLOT_INFO;
 	res->byQuickSlotCount = NTL_CHAR_QUICK_SLOT_MAX_COUNT;
+	app->db->fetch();
+	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
+ 
+	for (int i = 0, skill = 0, slotID = 0; i <= 32; i++)
+	{
+		 std::string query = "slotId_" + std::to_string((double long)i);
+		 skill = app->db->getInt(query.c_str());
+		 res->asQuickSlotData[i].bySlot = 255;
+		 res->asQuickSlotData[i].tblidx = 0;
+		 sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skill));
+		 if (pSkillData)
+		 {
+			printf("slotId_%d\n", i);
+			res->asQuickSlotData[i].bySlot = app->db->getInt(query.c_str());;
+			res->asQuickSlotData[i].tblidx = pSkillData->tblidx;
+			res->asQuickSlotData[i].byType = QUICK_SLOT_TYPE_SKILL;   
+		 }    
+	}
 	packet.AdjustPacketLen(sizeof(sNTLPACKETHEADER)+(2 * sizeof(BYTE)) + (res->byQuickSlotCount * sizeof(sQUICK_SLOT_PROFILE)));
 	g_pApp->Send(this->GetHandle(), &packet);
 }
@@ -298,13 +290,42 @@ void CClientSession::SendAvatarSkillInfo(CNtlPacket * pPacket, CGameServer * app
 		//Added because Shenron Buffs and for help to detect type of skills
 		//Note Shenron Buffs does not take ANY SLOTID
 		sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(app->db->getInt("skill_id")));
-
-		this->gsf->DebugSkillType(pSkillData->bySkill_Active_Type);
+		switch (pSkillData->bySkill_Active_Type)
+		{
+		case SKILL_ACTIVE_TYPE_DD:
+			printf("a\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_BB:
+			printf("b\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_CB:
+			printf("c\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DB:
+			printf("d\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DC:
+			printf("e\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DH:
+			printf("f\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		case SKILL_ACTIVE_TYPE_DOT:
+			printf("g\n");
+			printf("TBLIDX %i \n", pSkillData->tblidx);
+			break;
+		}
 
 		res->aSkillInfo[i].bIsRpBonusAuto = app->db->getBoolean("RpBonusAuto");
 		res->aSkillInfo[i].byRpBonusType = app->db->getInt("RpBonusType");		
 		this->gsf->DebugSkillType(pSkillData->bySkill_Active_Type);
-		res->aSkillInfo[i].bySlotId = app->db->getInt("SlotID");
+ 		res->aSkillInfo[i].bySlotId = app->db->getInt("SlotID");
 		res->aSkillInfo[i].dwTimeRemaining = app->db->getInt("TimeRemaining");
 		res->aSkillInfo[i].nExp = app->db->getInt("Exp");
 		res->aSkillInfo[i].tblidx = app->db->getInt("skill_id");
@@ -1941,6 +1962,7 @@ void CClientSession::SendCharActionAttack(RwUInt32 uiSerialId, RwUInt32 m_uiTarg
 {
 	CGameServer * app = (CGameServer*)NtlSfxGetApp();
 	static RwUInt8 byChainAttack = 0;
+	int CurHP = 0;
 	RwBool bDamageApply = true;
 
 	CNtlPacket packet(sizeof(sGU_CHAR_ACTION_ATTACK));
@@ -1949,11 +1971,27 @@ void CClientSession::SendCharActionAttack(RwUInt32 uiSerialId, RwUInt32 m_uiTarg
 	res->wOpCode = GU_CHAR_ACTION_ATTACK;
 	res->hSubject = uiSerialId;
 	res->hTarget = m_uiTargetSerialId;
-	res->dwLpEpEventId = 10;
+	res->dwLpEpEventId = 255;
 	res->bChainAttack = false;
-	res->byBlockedAction = 0; 
+	res->byBlockedAction = 255;
 
-	res->wAttackResultValue = 20;
+	if (IsMonsterInsideList(m_uiTargetSerialId) == true)
+	{
+		MobActivity::CreatureData *lol = app->mob->GetMobByHandle(m_uiTargetSerialId);
+		if (lol != NULL)
+		{
+			CurHP = (RwUInt32)lol->CurLP;
+		}
+	}
+	/*else if (IsMonsterInsideList(m_uiTargetSerialId) == false)
+	{
+		app->db->prepare("SELECT CurLP FROM characters WHERE onlineID = ?");
+		app->db->setInt(1, m_uiTargetSerialId);
+		app->db->execute();
+		app->db->fetch();
+		m_iCurrentHp = app->db->getInt("CurLP");
+	}*/
+	res->wAttackResultValue = 100;
 	res->fReflectedDamage = 0;
 	res->vShift.x = this->plr->GetPosition().x;
 	res->vShift.y = this->plr->GetPosition().y;
@@ -1963,6 +2001,7 @@ void CClientSession::SendCharActionAttack(RwUInt32 uiSerialId, RwUInt32 m_uiTarg
 
 	if(res->byAttackSequence == 6)
 	{
+		byChainAttack = 0;
 		if(rand()%2)
 		{
 			res->byAttackResult = BATTLE_ATTACK_RESULT_KNOCKDOWN;
@@ -1976,7 +2015,10 @@ void CClientSession::SendCharActionAttack(RwUInt32 uiSerialId, RwUInt32 m_uiTarg
 	{
 		RwInt32 iRandValue = rand()%5;
 		if(iRandValue <= 2)
+		{
 			res->byAttackResult = BATTLE_ATTACK_RESULT_HIT;
+			bDamageApply = true;
+		}
 		else if(iRandValue == 3)
 		{
 			bDamageApply = false;
@@ -1988,65 +2030,71 @@ void CClientSession::SendCharActionAttack(RwUInt32 uiSerialId, RwUInt32 m_uiTarg
 			res->byAttackResult = BATTLE_ATTACK_RESULT_BLOCK;
 		}
 	}
-
 	packet.SetPacketLen( sizeof(sGU_CHAR_ACTION_ATTACK) );
 	int rc = g_pApp->Send( this->GetHandle() , &packet );
 	app->UserBroadcast(&packet);
 	byChainAttack++;
 	// update LP
-	if(bDamageApply)
+	if(bDamageApply == true)
 	{
-		m_iCurrentHp -= 20;
-		if(m_iCurrentHp <= 0)
-		{
-			CClientSession::SendMobLoot(&packet, app, m_uiTargetSerialId);
-			m_iCurrentHp = 0;
-			/*CNtlPacket packet2(sizeof(sGU_UPDATE_CHAR_STATE));
-			sGU_UPDATE_CHAR_STATE * res = (sGU_UPDATE_CHAR_STATE *)packet2.GetPacketData();
-
-			req->byAvatarType = DBO_AVATAR_TYPE_AVATAR;
-			req->bFightMode = true;
-			req->wOpCode = UG_CHAR_TOGG_FIGHTING;
-			packet.SetPacketLen(sizeof(sUG_CHAR_TOGG_FIGHTING));
-			g_pApp->Send(this->GetHandle(), &packet);
-
-			res->handle = this->plr->GetAvatarandle();
-			res->sCharState.sCharStateBase.bFightMode = false;
-			res->wOpCode = GU_UPDATE_CHAR_STATE;
-			packet.SetPacketLen(sizeof(sGU_UPDATE_CHAR_STATE));
-			g_pApp->Send(this->GetHandle(), &packet2);
-			app->UserBroadcast(&packet2);*/
-		}
-		SendCharUpdateLp(pPacket, app, m_iCurrentHp, m_uiTargetSerialId);
+		this->gsf->printOk("OK");
+		CurHP -= res->wAttackResultValue;
 	}
-
-	// fainting °Ë»ç.
-	if(m_iCurrentHp <= 0)
+	else if (bDamageApply == false)
+		this->gsf->printError("DAMAGES NOT SENDED");
+	else
+		this->gsf->printError("WHAT THE FUCK");
+	if (CurHP <= 0)
 	{
+		CClientSession::SendMobLoot(&packet, app, m_uiTargetSerialId);
+		this->gsf->printOk("DIE MOTHER FUCKER");
+		CurHP = 0;
 		SendCharUpdateFaintingState(pPacket, app, uiSerialId, m_uiTargetSerialId);
 	}
-
+	else
+		SendCharUpdateLp(pPacket, app, CurHP, m_uiTargetSerialId);
 }
 
 void CClientSession::SendCharUpdateLp(CNtlPacket * pPacket, CGameServer * app, RwUInt16 wLp, RwUInt32 m_uiTargetSerialId)
 {
-	CNtlPacket packet(sizeof(sGU_UPDATE_CHAR_LP_EP));
-	sGU_UPDATE_CHAR_LP_EP * res = (sGU_UPDATE_CHAR_LP_EP *)packet.GetPacketData();
+	CNtlPacket packet(sizeof(sGU_UPDATE_CHAR_LP));
+	sGU_UPDATE_CHAR_LP * res = (sGU_UPDATE_CHAR_LP *)packet.GetPacketData();
 
-	res->wOpCode = GU_UPDATE_CHAR_LP_EP;
+	res->wOpCode = GU_UPDATE_CHAR_LP;
 	res->handle = m_uiTargetSerialId;
-	int mobid = IsMonsterIDInsideList(m_uiTargetSerialId);
-	sMOB_TBLDAT* pMOBtData = (sMOB_TBLDAT*) app->g_pTableContainer->GetMobTable()->FindData(mobid);
-	if (pMOBtData)
+	if (IsMonsterInsideList(m_uiTargetSerialId) == true)
 	{
-		res->wCurLP = wLp;
-		res->wMaxLP = pMOBtData->wBasic_LP;
-		res->wCurEP = pMOBtData->wBasic_EP;
-
-		packet.SetPacketLen( sizeof(sGU_UPDATE_CHAR_LP_EP) );
-		app->UserBroadcastothers(&packet, this);
-		g_pApp->Send( this->GetHandle() , &packet );
+		MobActivity::CreatureData *lol = app->mob->GetMobByHandle(m_uiTargetSerialId);
+		if (lol != NULL)
+		{
+			printf("wLP: %d, lol->CurLP: %d\n", wLp, lol->CurLP);
+			lol->FightMode = true;
+			lol->CurLP = (WORD)wLp;
+			res->wCurLP = lol->CurLP;
+			res->wMaxLP = lol->MaxLP;
+			res->dwLpEpEventId = 255;
+			packet.SetPacketLen( sizeof(sGU_UPDATE_CHAR_LP) );
+			app->UserBroadcastothers(&packet, this);
+			g_pApp->Send( this->GetHandle() , &packet );
+			printf("wLP: %d, lol->CurLP: %d\n", wLp, lol->CurLP);
+		}
 	}
+	/*else if (IsMonsterInsideList(m_uiTargetSerialId) == false)
+	{
+		this->gsf->printOk("PAS OK");
+		PlayerInfos *targetPlr = NULL;
+		app->GetUserSession(m_uiTargetSerialId, targetPlr);
+		if (targetPlr)
+		{
+			res->wCurLP = targetPlr->pcProfile->wCurLP = wLp;
+			res->wMaxLP = targetPlr->pcProfile->avatarAttribute.wLastMaxLP;
+			packet.SetPacketLen( sizeof(sGU_UPDATE_CHAR_LP) );
+
+			app->UserBroadcastothers(&packet, this);
+			g_pApp->Send( this->GetHandle() , &packet );
+			delete targetPlr;
+		}
+	}*/
 }
 void	CClientSession::SendMobLoot(CNtlPacket * pPacket, CGameServer * app, RwUInt32 m_uiTargetSerialId)
 {
@@ -2143,10 +2191,10 @@ void CClientSession::SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app)
 	app->db->fetch();
 	int skillID = app->db->getInt("skill_id");
 	CSkillTable * skillTable = app->g_pTableContainer->GetSkillTable();
-	sSKILL_TBLDAT * skillDataOriginal = reinterpret_cast<sSKILL_TBLDAT*>(skillTable->FindData(skillID));
+ 	sSKILL_TBLDAT * skillDataOriginal = reinterpret_cast<sSKILL_TBLDAT*>(skillTable->FindData(skillID));
 	pSkillData->pCharSkillTarget = pCharSkillReq->hTarget;
 	pSkillData->m_uiSkillTblId = skillID;	//GetSkillId[m_Char.iClass][pCharSkillReq->bySlotIndex];
-	pSkillData->m_bySkillActiveType = SKILL_TYPE_CASTING;	
+	pSkillData->m_bySkillActiveType = SKILL_TYPE_CASTING; 
 	pSkillData->m_uiSkillTime = timeGetTime();
 
 	CNtlPacket packet(sizeof(sGU_CHAR_SKILL_RES));
@@ -2158,12 +2206,11 @@ void CClientSession::SendCharSkillRes(CNtlPacket * pPacket, CGameServer * app)
 	packet.SetPacketLen(sizeof(sGU_CHAR_SKILL_RES));
 	int rc = g_pApp->Send(this->GetHandle(), &packet);
 	app->UserBroadcast(&packet);
-	//Just a test to see if We can get Skill Buff Efects Working,Transform or if is a SSJ Skill or another Transform Skill - luiz45
 	if ((skillDataOriginal->dwKeepTimeInMilliSecs != 0) || (skillDataOriginal->dwTransform_Use_Info_Bit_Flag==1))
 		SendCharSkillCasting(pPacket, app, skillID);
-	else
-		SendCharSkillAction(pPacket, app, skillID);
-		
+ 	else
+ 		SendCharSkillAction(pPacket, app, skillID);
+ 		
 }
 //--------------------------------------------------------------------------------------//
 //		Char Skill Send
@@ -2193,34 +2240,58 @@ void CClientSession::SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app
 	res->aSkillResult[1].byAttackResult = BATTLE_ATTACK_RESULT_HIT;
 	res->aSkillResult[1].effectResult1.fResultValue = pSkillTblData->fSkill_Effect_Value[0];
 	res->aSkillResult[1].effectResult2.fResultValue = pSkillTblData->fSkill_Effect_Value[1];
-	SendCharUpdateLp(pPacket, app, res->aSkillResult[0].effectResult1.fResultValue, res->hAppointedTarget);
+
 	packet.SetPacketLen(sizeof(sGU_CHAR_ACTION_SKILL));
 	int rc = g_pApp->Send(this->GetHandle(), &packet);
 	app->UserBroadcastothers(&packet, this);
+	
+	float newLP = 0;
+	if (IsMonsterInsideList(res->hAppointedTarget) == true)
+	{
+		MobActivity::CreatureData *lol = app->mob->GetMobByHandle(res->hAppointedTarget);
+		if (lol != NULL)
+		{
+			lol->FightMode = true;
+			newLP = (float)lol->CurLP;
+			newLP -= res->aSkillResult[0].effectResult1.fResultValue;
+			printf("LP: %f, damage: %f\n", newLP, res->aSkillResult[0].effectResult1.fResultValue);
+			if (newLP <= 0 || (newLP > lol->MaxLP))
+			{
+				lol->IsDead = true;
+				CClientSession::SendMobLoot(&packet, app, res->hAppointedTarget);
+				this->gsf->printOk("DIE MOTHER FUCKER");
+				SendCharUpdateFaintingState(pPacket, app, this->GetavatarHandle(), res->hAppointedTarget);
+			}
+			else if (newLP > 0 && lol->IsDead == false)
+			{
+				SendCharUpdateLp(pPacket, app, newLP, res->hAppointedTarget);
+			}
+		}
+	}
 }
+
+
 //-------------------------------------------------------------------//
 //----------Fixed Casting Buff/Transform Skills - Luiz45-------------//
 //-------------------------------------------------------------------//
 void CClientSession::SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app, int _skillID)
 {
 	printf("USE SKILL\n");
-	CNtlPacket packet(sizeof(sGU_CHAR_ACTION_SKILL));
-	CSkillTable *pSkillTbl = app->g_pTableContainer->GetSkillTable();
-	int skillID = _skillID;
-	sSKILL_TBLDAT *pSkillTblData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTbl->FindData(skillID));
-	sGU_CHAR_ACTION_SKILL * res = (sGU_CHAR_ACTION_SKILL *)packet.GetPacketData();
-	
-	res->skillId = pSkillTblData->tblidx;
-	res->wResultCode = GAME_SUCCESS;
-	res->wOpCode = GU_CHAR_ACTION_SKILL;
-	res->handle = this->GetavatarHandle();//My Handle
-	res->hAppointedTarget = this->GetTargetSerialId();//Get myself
-	
+ 	CNtlPacket packet(sizeof(sGU_CHAR_ACTION_SKILL));
+ 	CSkillTable *pSkillTbl = app->g_pTableContainer->GetSkillTable();
+ 	int skillID = _skillID;
+ 	sSKILL_TBLDAT *pSkillTblData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTbl->FindData(skillID));
+ 	sGU_CHAR_ACTION_SKILL * res = (sGU_CHAR_ACTION_SKILL *)packet.GetPacketData();
+ 	
+ 	res->skillId = pSkillTblData->tblidx;
+ 	res->wResultCode = GAME_SUCCESS;
+ 	res->wOpCode = GU_CHAR_ACTION_SKILL;
+ 	res->handle = this->GetavatarHandle();//My Handle
+ 	res->hAppointedTarget = this->GetTargetSerialId();//Get myself
 
 	packet.SetPacketLen(sizeof(sGU_CHAR_ACTION_SKILL));
-	int rc = g_pApp->Send(this->GetHandle(), &packet);
-	app->UserBroadcastothers(&packet, this);
-
+  	int rc = g_pApp->Send(this->GetHandle(), &packet);
+  	app->UserBroadcastothers(&packet, this);
 }
 
 void CGameServer::UpdateClient(CNtlPacket * pPacket, CClientSession * pSession)
@@ -3087,19 +3158,19 @@ void	CClientSession::SendDragonBallRewardReq(CNtlPacket * pPacket, CGameServer *
 	res3->sCharState.sCharStateBase.byStateID = CHARSTATE_DESPAWNING;
 	res3->wOpCode = GU_UPDATE_CHAR_STATE;
 	packet5.SetPacketLen( sizeof(sGU_UPDATE_CHAR_STATE) );
-		g_pApp->Send( this->GetHandle() , &packet5 );
-		app->UserBroadcastothers(&packet5, this);
+	g_pApp->Send( this->GetHandle() , &packet5 );
+	app->UserBroadcastothers(&packet5, this);
 
 
 
 	Sleep(10000);
 	CNtlPacket packet4(sizeof(sGU_OBJECT_DESTROY));
 	sGU_OBJECT_DESTROY * res4 = (sGU_OBJECT_DESTROY *)packet4.GetPacketData();
-		res4->handle = 90000;
-		res4->wOpCode = GU_OBJECT_DESTROY;
-		packet4.SetPacketLen( sizeof(sGU_OBJECT_DESTROY) );
-		g_pApp->Send( this->GetHandle() , &packet4 );
-		app->UserBroadcastothers(&packet4, this);
+	res4->handle = 90000;
+	res4->wOpCode = GU_OBJECT_DESTROY;
+	packet4.SetPacketLen( sizeof(sGU_OBJECT_DESTROY) );
+	g_pApp->Send( this->GetHandle() , &packet4 );
+	app->UserBroadcastothers(&packet4, this);
 
 }
 void CClientSession::SendGambleBuyReq(CNtlPacket * pPacket, CGameServer * app)
@@ -3343,7 +3414,7 @@ void	CClientSession::SendZennyPickUpReq(CNtlPacket * pPacket, CGameServer * app)
 	sUG_ZENNY_PICK_REQ* req = (sUG_ZENNY_PICK_REQ *)pPacket->GetPacketData();
 	CNtlPacket packet(sizeof(sGU_ZENNY_PICK_RES));
 	sGU_ZENNY_PICK_RES * res = (sGU_ZENNY_PICK_RES *)packet.GetPacketData();
-
+	printf("%d = req->handle, %d = req->byAvatarType\n", req->handle,req->byAvatarType );
 	res->bSharedInParty = false; //this->plr->isInParty();
 	res->dwAcquisitionZenny = 0;
 	res->dwBonusZenny = 0;
@@ -3369,10 +3440,10 @@ void	CClientSession::SendFreeBattleReq(CNtlPacket * pPacket, CGameServer * app)
 	res2->wOpCode = GU_FREEBATTLE_ACCEPT_REQ;
 
 	packet.SetPacketLen( sizeof(sGU_FREEBATTLE_CHALLENGE_RES) );
-	g_pApp->Send( this->GetHandle() , &packet );
+	g_pApp->Send( this->GetHandle(), &packet );
 	packet2.SetPacketLen( sizeof(sGU_FREEBATTLE_ACCEPT_REQ) );
-	g_pApp->Send( this->GetHandle() , &packet2 );
-	app->UserBroadcastothers(&packet2, this);
+	g_pApp->Send( this->GetHandle(), &packet2 );
+	app->UserBroadcastothers(&packet, this);
 }
 void	CClientSession::SendFreeBattleAccpetReq(CNtlPacket * pPacket, CGameServer * app)
 {
@@ -3404,44 +3475,65 @@ void	CClientSession::SendFreeBattleAccpetReq(CNtlPacket * pPacket, CGameServer *
 void	CClientSession::SendItemUseReq(CNtlPacket * pPacket, CGameServer * app)
 {
 	sUG_ITEM_USE_REQ * req = (sUG_ITEM_USE_REQ*)pPacket->GetPacketData();
-	
-	CNtlPacket packet(sizeof(sGU_ITEM_USE_RES));
-	sGU_ITEM_USE_RES * res = (sGU_ITEM_USE_RES*)packet.GetPacketData();
-	app->db->prepare("SELECT * FROM items WHERE owner_id = ? AND place = ? AND pos = ?");
-	app->db->setInt(1, this->plr->pcProfile->charId);
-	app->db->setInt(2, req->byPlace);
-	app->db->setInt(3, req->byPos);
-	app->db->execute();
-	app->db->fetch();
+ 	
+ 	CNtlPacket packet(sizeof(sGU_ITEM_USE_RES));
+ 	sGU_ITEM_USE_RES * res = (sGU_ITEM_USE_RES*)packet.GetPacketData();
+ 	app->db->prepare("SELECT * FROM items WHERE owner_id = ? AND place = ? AND pos = ?");
+ 	app->db->setInt(1, this->plr->pcProfile->charId);
+ 	app->db->setInt(2, req->byPlace);
+ 	app->db->setInt(3, req->byPos);
+ 	app->db->execute();
+ 	app->db->fetch();
+ 
+ 	sCHARSTATE_CASTING_ITEM * charState;
+ 	sITEM_TBLDAT * itemTBL = reinterpret_cast<sITEM_TBLDAT*>(app->g_pTableContainer->GetItemTable()->FindData(app->db->getInt("tblidx")));
+ 	
+ 	res->byPlace = app->db->getInt("place");
+ 	res->byPos = app->db->getInt("pos");
+ 	res->tblidxItem = app->db->getInt("tblidx");
+ 	res->wOpCode = GU_ITEM_USE_RES;
+ 	res->wResultCode = GAME_SUCCESS;
+ 	packet.SetPacketLen(sizeof(sGU_ITEM_USE_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet);
+ 	printf("Pass");
+ 	//app->UserBroadcastothers(&packet, this);
+ 	
+}
+ //---------------------------------------------------------------------//
+ //------------------Skill Transform Cancel - Luiz45--------------------//
+ //---------------------------------------------------------------------//
+ void CClientSession::SendCharSkillTransformCancel(CNtlPacket * pPacket, CGameServer * app)
+ {
+ 	sUG_TRANSFORM_CANCEL_REQ * req = (sUG_TRANSFORM_CANCEL_REQ*)pPacket->GetPacketData();
+ 	CNtlPacket packet(sizeof(sGU_TRANSFORM_CANCEL_RES));
+ 	sGU_TRANSFORM_CANCEL_RES * res =(sGU_TRANSFORM_CANCEL_RES*)packet.GetPacketData();
+ 	res->wOpCode = GU_TRANSFORM_CANCEL_RES;
+ 	res->wResultCode = GAME_SUCCESS;
+ 	packet.SetPacketLen(sizeof(sGU_TRANSFORM_CANCEL_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet);
+ 	//CNtlPacket packet(sizeof(sGU_CHAR_ACTION_SKILL));
+ 	sGU_CHAR_ACTION_SKILL * res2 = (sGU_CHAR_ACTION_SKILL *)pPacket->GetPacketData();
+ 	//sSKILL_TBLDAT *pSkillTblData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTbl->FindData(skillID));
+ 	app->UserBroadcastothers(&packet, this);
+  }
 
-	sCHARSTATE_CASTING_ITEM * charState;
-	sITEM_TBLDAT * itemTBL = reinterpret_cast<sITEM_TBLDAT*>(app->g_pTableContainer->GetItemTable()->FindData(app->db->getInt("tblidx")));
-	
-	res->byPlace = app->db->getInt("place");
-	res->byPos = app->db->getInt("pos");
-	res->tblidxItem = app->db->getInt("tblidx");
-	res->wOpCode = GU_ITEM_USE_RES;
-	res->wResultCode = GAME_SUCCESS;
-	packet.SetPacketLen(sizeof(sGU_ITEM_USE_RES));
+ void CClientSession::SendSocialSkillRes(CNtlPacket * pPacket, CGameServer * app)
+ {
+	/* sUG_SOCIAL_ACTION * req = (sUG_SOCIAL_ACTION*)pPacket->GetPacketData();
+ 	CNtlPacket packet(sizeof(sGU_SOCIAL_ACTION));
+ 	sGU_SOCIAL_ACTION* res =(sGU_SOCIAL_ACTION*)packet.GetPacketData();
+	printf("Req Social Action ID %d \n", req->socialActionId);
+	req->wOpCode = UG_SOCIAL_ACTION;
+	printf("Req Social Action OpCode %d \n", req->wOpCode);
+	res->hSubject = this->plr->GetAvatarandle();
+	res->socialActionId = req->socialActionId;
+	res->wOpCode = GU_SOCIAL_ACTION;
+	printf("Res Social Action ID %d \n", res->socialActionId);
+	printf("Res Social Action Subject %d \n", res->hSubject);
+	printf("Res Social Action OpCode %d \n", res->wOpCode);
+	packet.SetPacketLen(sizeof(GU_SOCIAL_ACTION));
 	g_pApp->Send(this->GetHandle(), &packet);
-	printf("Pass");
-	//app->UserBroadcastothers(&packet, this);
-	
-}
-//---------------------------------------------------------------------//
-//------------------Skill Transform Cancel - Luiz45--------------------//
-//---------------------------------------------------------------------//
-void CClientSession::SendCharSkillTransformCancel(CNtlPacket * pPacket, CGameServer * app)
-{
-	sUG_TRANSFORM_CANCEL_REQ * req = (sUG_TRANSFORM_CANCEL_REQ*)pPacket->GetPacketData();
-	CNtlPacket packet(sizeof(sGU_TRANSFORM_CANCEL_RES));
-	sGU_TRANSFORM_CANCEL_RES * res =(sGU_TRANSFORM_CANCEL_RES*)packet.GetPacketData();
-	res->wOpCode = GU_TRANSFORM_CANCEL_RES;
-	res->wResultCode = GAME_SUCCESS;
-	packet.SetPacketLen(sizeof(sGU_TRANSFORM_CANCEL_RES));
-	g_pApp->Send(this->GetHandle(), &packet);
-	//CNtlPacket packet(sizeof(sGU_CHAR_ACTION_SKILL));
-	sGU_CHAR_ACTION_SKILL * res2 = (sGU_CHAR_ACTION_SKILL *)pPacket->GetPacketData();
-	//sSKILL_TBLDAT *pSkillTblData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTbl->FindData(skillID));
+	printf("Packet Sent");
 	app->UserBroadcastothers(&packet, this);
-}
+	printf("Broadcast Sent");*/
+ }

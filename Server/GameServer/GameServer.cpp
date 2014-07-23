@@ -546,6 +546,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_SOCIAL_ACTION:
 		{
 			printf("--- UG_SOCIAL_ACTION --- \n");
+			CClientSession::SendSocialSkillRes(pPacket,app);
 		}
 			break;
 		case UG_TS_CONFIRM_STEP_REQ:
