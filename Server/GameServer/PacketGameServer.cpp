@@ -2236,11 +2236,12 @@ void CClientSession::SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app
 	res->aSkillResult[0].byAttackResult = BATTLE_ATTACK_RESULT_HIT;
 	res->aSkillResult[0].effectResult1.fResultValue = pSkillTblData->fSkill_Effect_Value[0];
 	res->aSkillResult[0].effectResult2.fResultValue = pSkillTblData->fSkill_Effect_Value[1];
+	res->aSkillResult[0].byBlockedAction = 255;
 	res->aSkillResult[1].hTarget = this->GetTargetSerialId() +1;
 	res->aSkillResult[1].byAttackResult = BATTLE_ATTACK_RESULT_HIT;
 	res->aSkillResult[1].effectResult1.fResultValue = pSkillTblData->fSkill_Effect_Value[0];
 	res->aSkillResult[1].effectResult2.fResultValue = pSkillTblData->fSkill_Effect_Value[1];
-
+	res->aSkillResult[1].byBlockedAction = 255;
 	packet.SetPacketLen(sizeof(sGU_CHAR_ACTION_SKILL));
 	int rc = g_pApp->Send(this->GetHandle(), &packet);
 	app->UserBroadcastothers(&packet, this);
@@ -2269,6 +2270,8 @@ void CClientSession::SendCharSkillAction(CNtlPacket * pPacket, CGameServer * app
 		}
 	}
 }
+
+
 //-------------------------------------------------------------------//
 //----------Fixed Casting Buff/Transform Skills - Luiz45-------------//
 //-------------------------------------------------------------------//
@@ -2289,24 +2292,25 @@ void CClientSession::SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * ap
  	res->hAppointedTarget = this->GetTargetSerialId();//Get myself
 
 	//Buff Events Prepare
-	CNtlPacket packet2(sizeof(sGU_BUFF_REGISTERED));
-	sGU_BUFF_REGISTERED * pBuffData = (sGU_BUFF_REGISTERED*)packet2.GetPacketData();
-	pBuffData->wOpCode = GU_BUFF_REGISTERED;
-	pBuffData->tblidx = pSkillTblData->tblidx;
-	pBuffData->hHandle = this->GetavatarHandle();
-	pBuffData->dwInitialDuration = pSkillTblData->dwCoolTimeInMilliSecs;
-	pBuffData->dwTimeRemaining	 = pSkillTblData->dwKeepTimeInMilliSecs;
-	pBuffData->afEffectValue[0] = pSkillTblData->fSkill_Effect_Value[0];
-	pBuffData->afEffectValue[1] = pSkillTblData->fSkill_Effect_Value[1];
-	//pBuffData->bNeedToDisplayMessage = pSkillTblData->bDefaultDisplayOff;//Only to display...String ID bla bla not found...if you want see uncomment this line
-	pBuffData->bySourceType = DBO_OBJECT_SOURCE_SKILL;
+ 	CNtlPacket packet2(sizeof(sGU_BUFF_REGISTERED));
+ 	sGU_BUFF_REGISTERED * pBuffData = (sGU_BUFF_REGISTERED*)packet2.GetPacketData();
+ 	pBuffData->wOpCode = GU_BUFF_REGISTERED;
+ 	pBuffData->tblidx = pSkillTblData->tblidx;
+ 	pBuffData->hHandle = this->GetavatarHandle();
+ 	pBuffData->dwInitialDuration = pSkillTblData->dwCoolTimeInMilliSecs;
+ 	pBuffData->dwTimeRemaining	 = pSkillTblData->dwKeepTimeInMilliSecs;
+ 	pBuffData->afEffectValue[0] = pSkillTblData->fSkill_Effect_Value[0];
+ 	pBuffData->afEffectValue[1] = pSkillTblData->fSkill_Effect_Value[1];
+ 	//pBuffData->bNeedToDisplayMessage = pSkillTblData->bDefaultDisplayOff;//Only to display...String ID bla bla not found...if you want see uncomment this line
+ 	pBuffData->bySourceType = DBO_OBJECT_SOURCE_SKILL;
+
 
 	packet.SetPacketLen(sizeof(sGU_CHAR_ACTION_SKILL));
-	packet2.SetPacketLen(sizeof(sGU_BUFF_REGISTERED));  	
-	g_pApp->Send(this->GetHandle(), &packet2);
-	g_pApp->Send(this->GetHandle(), &packet);
-	app->UserBroadcastothers(&packet2, this);
-  	app->UserBroadcastothers(&packet, this);	
+  	packet2.SetPacketLen(sizeof(sGU_BUFF_REGISTERED));  	
+ 	g_pApp->Send(this->GetHandle(), &packet2);
+ 	g_pApp->Send(this->GetHandle(), &packet);
+ 	app->UserBroadcastothers(&packet2, this);
+  	app->UserBroadcastothers(&packet, this);
 }
 
 void CGameServer::UpdateClient(CNtlPacket * pPacket, CClientSession * pSession)
@@ -3418,7 +3422,77 @@ void CClientSession::SendPlayerQuestReq(CNtlPacket * pPacket, CGameServer * app)
 		// WE NEED THE CORRECT TBLIDX FOR THE REWARD
 
 		/*sQUEST_REWARD_TBLDAT *rew = (sQUEST_REWARD_TBLDAT*)app->g_pTableContainer->GetQuestRewardTable()->FindData(res->tId);
-		printf("%d %d %d %d\n%d %d %d %d\n%d\n",rew->arsDefRwd[0], rew->arsDefRwd[1], rew->arsDefRwd[2], rew->arsDefRwd[3], rew->arsSelRwd[0], rew->arsSelRwd[1], rew->arsSelRwd[2], rew->arsSelRwd[3], rew->tblidx);*/
+		printf("%d %d %d %d\n%d %d %d %d\n%d\n",rew->arsDefRwd[0], rew->arsDefRwd[1], rew->arsDefRwd[2], rew->arsDefRwd[3], rew->arsSelRwd[0], rew->arsSelRwd[1], rew->arsSelRwd[2], rew->arsSelRwd[3], rew->tblidx);
+		for(int i = 0; i <= QUEST_REWARD_DEF_MAX_CNT; i++ )
+		{
+			switch (rew->arsDefRwd[i].byRewardType)
+			{
+				case eREWARD_TYPE_NORMAL_ITEM:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Normal Item");
+				}
+				case eREWARD_TYPE_QUEST_ITEM:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Quest Item");
+				}
+				case eREWARD_TYPE_EXP:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Experience");
+				}
+				case eREWARD_TYPE_SKILL:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Skill");
+				}
+				case eREWARD_TYPE_ZENY:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Zenny");
+				}
+				case eREWARD_TYPE_CHANGE_CLASS:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Type Change Class");
+				}
+				case eREWARD_TYPE_PROBABILITY:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Probability");
+				}
+				case eREWARD_TYPE_REPUTATION:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Reputation");
+				}
+				case eREWARD_TYPE_CHANGE_ADULT:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Change Adult");
+				}
+				case eREWARD_TYPE_GET_CONVERT_CLASS_RIGHT:
+				{
+					rew->arsDefRwd[i].dwRewardIdx;
+					rew->arsDefRwd[i].dwRewardVal;
+					gsf->printOk("Reward Convert Class");
+				}
+				default:
+				{
+					gsf->printError("Unknown Reward Type");
+				}
+			}
+		}*/
 	}
 	//printf("res->byTsType = %d, res->dwParam = %d, res->tcCurId = %d, res->tcNextId = %d, res->tId = %d\n",res->byTsType, res->dwParam, res->tcCurId, res->tcNextId, res->tId); 
 	packet.SetPacketLen( sizeof(sGU_TS_CONFIRM_STEP_RES) );
@@ -3514,80 +3588,102 @@ void	CClientSession::SendItemUseReq(CNtlPacket * pPacket, CGameServer * app)
  	//app->UserBroadcastothers(&packet, this);
  	
 }
-//---------------------------------------------------------------------//
-//------------------Skill Transform Cancel - Luiz45--------------------//
-//---------------------------------------------------------------------//
+ //---------------------------------------------------------------------//
+ //------------------Skill Transform Cancel - Luiz45--------------------//
+ //---------------------------------------------------------------------//
 void CClientSession::SendCharSkillTransformCancel(CNtlPacket * pPacket, CGameServer * app)
 {
-	//Response Skill
-	sUG_TRANSFORM_CANCEL_REQ * req = (sUG_TRANSFORM_CANCEL_REQ*)pPacket->GetPacketData();
-	CNtlPacket packet(sizeof(sGU_TRANSFORM_CANCEL_RES));
-	sGU_TRANSFORM_CANCEL_RES * res =(sGU_TRANSFORM_CANCEL_RES*)packet.GetPacketData();
-	res->wOpCode = GU_TRANSFORM_CANCEL_RES;
-	res->wResultCode = GAME_SUCCESS;
-
-	//Update Char State
-	CNtlPacket packet2(sizeof(sGU_UPDATE_CHAR_ASPECT_STATE));
-	sGU_UPDATE_CHAR_ASPECT_STATE * myPlayerState = (sGU_UPDATE_CHAR_ASPECT_STATE*)packet2.GetPacketData();
-	myPlayerState->handle = this->plr->GetAvatarandle();
-	myPlayerState->wOpCode = GU_UPDATE_CHAR_ASPECT_STATE;
-	myPlayerState->aspectState.sAspectStateBase.byAspectStateId = 255;//Don't see any Const then i send 0 because i'm not going transform ^^
-	
-	//Packets Sending
-	packet.SetPacketLen(sizeof(sGU_TRANSFORM_CANCEL_RES));
-	packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_ASPECT_STATE));
-	g_pApp->Send(this->GetHandle(), &packet);
-	g_pApp->Send(this->GetHandle(), &packet2);
-
+ 	//Response Skill
+ 	sUG_TRANSFORM_CANCEL_REQ * req = (sUG_TRANSFORM_CANCEL_REQ*)pPacket->GetPacketData();
+ 	CNtlPacket packet(sizeof(sGU_TRANSFORM_CANCEL_RES));
+ 	sGU_TRANSFORM_CANCEL_RES * res =(sGU_TRANSFORM_CANCEL_RES*)packet.GetPacketData();
+ 	res->wOpCode = GU_TRANSFORM_CANCEL_RES;
+ 	res->wResultCode = GAME_SUCCESS;
+ 
+ 	//Update Char State
+ 	CNtlPacket packet2(sizeof(sGU_UPDATE_CHAR_ASPECT_STATE));
+ 	sGU_UPDATE_CHAR_ASPECT_STATE * myPlayerState = (sGU_UPDATE_CHAR_ASPECT_STATE*)packet2.GetPacketData();
+ 	myPlayerState->handle = this->plr->GetAvatarandle();
+ 	myPlayerState->wOpCode = GU_UPDATE_CHAR_ASPECT_STATE;
+ 	myPlayerState->aspectState.sAspectStateBase.byAspectStateId = 255;//Don't see any Const then i send 0 because i'm not going transform ^^
+ 	
+ 	//Packets Sending
+ 	packet.SetPacketLen(sizeof(sGU_TRANSFORM_CANCEL_RES));
+ 	packet2.SetPacketLen(sizeof(sGU_UPDATE_CHAR_ASPECT_STATE));
+ 	g_pApp->Send(this->GetHandle(), &packet);
+ 	g_pApp->Send(this->GetHandle(), &packet2);
+ 
 	//Sending to others
 	app->UserBroadcastothers(&packet, this);
 	app->UserBroadcastothers(&packet2, this);
 }
 
-void CClientSession::SendSocialSkillRes(CNtlPacket * pPacket, CGameServer * app)
-{	
-	/*sUG_SOCIAL_ACTION * req = (sUG_SOCIAL_ACTION*)pPacket->GetPacketData();
 
-	CNtlPacket packet(sizeof(sGU_SOCIAL_ACTION));
-	
-	sGU_SOCIAL_ACTION* res =(sGU_SOCIAL_ACTION*)packet.GetPacketData();
-	sSKILL_RESULT * skResl = (sSKILL_RESULT*)pPacket->GetPacketData();
+ void CClientSession::SendSocialSkillRes(CNtlPacket * pPacket, CGameServer * app)
+ {
+	/* sUG_SOCIAL_ACTION * req = (sUG_SOCIAL_ACTION*)pPacket->GetPacketData();
+ 	CNtlPacket packet(sizeof(sGU_SOCIAL_ACTION));
+ 	sGU_SOCIAL_ACTION* res =(sGU_SOCIAL_ACTION*)packet.GetPacketData();
+	printf("Req Social Action ID %d \n", req->socialActionId);
+	req->wOpCode = UG_SOCIAL_ACTION;
+	printf("Req Social Action OpCode %d \n", req->wOpCode);
 	res->hSubject = this->plr->GetAvatarandle();
 	res->socialActionId = req->socialActionId;
 	res->wOpCode = GU_SOCIAL_ACTION;
+	printf("Res Social Action ID %d \n", res->socialActionId);
+	printf("Res Social Action Subject %d \n", res->hSubject);
+	printf("Res Social Action OpCode %d \n", res->wOpCode);
 	packet.SetPacketLen(sizeof(GU_SOCIAL_ACTION));
 	g_pApp->Send(this->GetHandle(), &packet);
-	//app->UserBroadcastothers(&packet, this);*/
-}
+	printf("Packet Sent");
+	app->UserBroadcastothers(&packet, this);
+	printf("Broadcast Sent");*/
+ }
+
+ void CClientSession::SendRpCharge(CNtlPacket *pPacket, CGameServer * app)
+ {
+	 sUG_CHAR_CHARGE * req = (sUG_CHAR_CHARGE*)pPacket->GetPacketData();
+ 	 CNtlPacket packet(sizeof(sGU_UPDATE_CHAR_STATE));
+	sGU_UPDATE_CHAR_STATE * res = (sGU_UPDATE_CHAR_STATE *)packet.GetPacketData();
+	
+	res->handle = this->GetHandle();
+	res->sCharState.sCharStateBase.byStateID = CHARSTATE_CHARGING;
+	res->wOpCode = GU_UPDATE_CHAR_STATE;
+
+	g_pApp->Send(this->GetHandle(), &packet);
+	app->UserBroadcastothers(&packet, this);
+	 
+ }
+
 //-----------------------------------------------------------------//
 //-------------------Skill/Item BUFF Drop--------------------------//
 //-----------------------------------------------------------------//
 void CClientSession::SendCharSkillBuffDrop(CNtlPacket * pPacket, CGameServer * app)
 {
-	sUG_BUFF_DROP_REQ * req = (sUG_BUFF_DROP_REQ*)pPacket->GetPacketData();
-	//Get Skill to Remove
-	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
-	sSKILL_RESULT * pSkillData = (sSKILL_RESULT*)pPacket->GetPacketData();
-
-	//Response Prepare
-	CNtlPacket packet(sizeof(sGU_BUFF_DROP_RES));
-	sGU_BUFF_DROP_RES * res = (sGU_BUFF_DROP_RES*)packet.GetPacketData();
-	res->wOpCode = GU_BUFF_DROP_RES;
-	res->wResultCode = GAME_SUCCESS;
-
-	//Dropp Event Prepare
-	CNtlPacket packet2(sizeof(sGU_BUFF_DROPPED));
-	sGU_BUFF_DROPPED * pBuffDrop = (sGU_BUFF_DROPPED*)packet2.GetPacketData();
-	pBuffDrop->hHandle = this->GetavatarHandle();
-	pBuffDrop->bySourceType = DBO_OBJECT_SOURCE_SKILL;//Need be rechecked because this can be a type DBO_OBJECT_SOURCE_ITEM
-	pBuffDrop->wOpCode = GU_BUFF_DROPPED;
-	pBuffDrop->tblidx = req->tblidx;
-
-	//First Drop,Second Resp to client
-	packet2.SetPacketLen(sizeof(sGU_BUFF_DROPPED));
-	packet.SetPacketLen(sizeof(sGU_BUFF_DROP_RES));
-	g_pApp->Send(this->GetHandle(), &packet2);
-	g_pApp->Send(this->GetHandle(), &packet);
-	app->UserBroadcastothers(&packet2, this);
-	app->UserBroadcastothers(&packet, this);
-}
+ 	sUG_BUFF_DROP_REQ * req = (sUG_BUFF_DROP_REQ*)pPacket->GetPacketData();
+ 	//Get Skill to Remove
+ 	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
+ 	sSKILL_RESULT * pSkillData = (sSKILL_RESULT*)pPacket->GetPacketData();
+ 
+ 	//Response Prepare
+ 	CNtlPacket packet(sizeof(sGU_BUFF_DROP_RES));
+ 	sGU_BUFF_DROP_RES * res = (sGU_BUFF_DROP_RES*)packet.GetPacketData();
+ 	res->wOpCode = GU_BUFF_DROP_RES;
+ 	res->wResultCode = GAME_SUCCESS;
+ 
+ 	//Dropp Event Prepare
+ 	CNtlPacket packet2(sizeof(sGU_BUFF_DROPPED));
+ 	sGU_BUFF_DROPPED * pBuffDrop = (sGU_BUFF_DROPPED*)packet2.GetPacketData();
+ 	pBuffDrop->hHandle = this->GetavatarHandle();
+ 	pBuffDrop->bySourceType = DBO_OBJECT_SOURCE_SKILL;//Need be rechecked because this can be a type DBO_OBJECT_SOURCE_ITEM
+ 	pBuffDrop->wOpCode = GU_BUFF_DROPPED;
+ 	pBuffDrop->tblidx = req->tblidx;
+ 
+ 	//First Drop,Second Resp to client
+ 	packet2.SetPacketLen(sizeof(sGU_BUFF_DROPPED));
+ 	packet.SetPacketLen(sizeof(sGU_BUFF_DROP_RES));
+ 	g_pApp->Send(this->GetHandle(), &packet2);
+ 	g_pApp->Send(this->GetHandle(), &packet);
+ 	app->UserBroadcastothers(&packet2, this);
+  	app->UserBroadcastothers(&packet, this);
+ }
