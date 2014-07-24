@@ -220,6 +220,7 @@ public:
 	void						SendCharSkillCasting(CNtlPacket * pPacket, CGameServer * app, int _skillid);
  	void						SendCharSkillTransformCancel(CNtlPacket * pPacket, CGameServer * app);
 	void						SendSocialSkillRes(CNtlPacket *pPacket, CGameServer * app);
+	void						SendCharSkillBuffDrop(CNtlPacket *pPacket, CGameServer * app);
 
 	// QuickSlots
 	void						SendCharUpdQuickSlot(CNtlPacket * pPacket, CGameServer * app);

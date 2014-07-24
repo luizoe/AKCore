@@ -295,6 +295,7 @@ int CClientSession::OnDispatch(CNtlPacket * pPacket)
 		case UG_BUFF_DROP_REQ:
 		{
 			printf("--- UG_BUFF_DROP_REQ --- \n");
+			CClientSession::SendCharSkillBuffDrop(pPacket, app);
 		}
 			break;
 		case UG_ITEM_MOVE_REQ:
