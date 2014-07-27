@@ -248,23 +248,33 @@ void CClientSession::SendSlotInfo(CNtlPacket * pPacket, CGameServer * app)
 	
 	app->db->fetch();
 	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
+	CItemTable * pItemTable = app->g_pTableContainer->GetItemTable();
 
 	int i = 0;
-	int skill = 0;
+	int SkillOrItem = 0;
 	int slotID = 0;
 	while (i < 48)
 	{
 		std::string query = "slotId_" + std::to_string(i);
 		printf("LOading slot %s\n", query.c_str());
-		skill = app->db->getInt(query.c_str());
+		SkillOrItem = app->db->getInt(query.c_str());
 		res->asQuickSlotData[slotID].bySlot = 255;
 		res->asQuickSlotData[slotID].tblidx = 0;		
-		sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(skill));
+		sSKILL_TBLDAT* pSkillData = reinterpret_cast<sSKILL_TBLDAT*>(pSkillTable->FindData(SkillOrItem));
+		sITEM_TBLDAT * pItemData = reinterpret_cast<sITEM_TBLDAT*>(pItemTable->FindData(SkillOrItem));
 		if (pSkillData)
 		{
 			res->asQuickSlotData[slotID].bySlot = i;
 			res->asQuickSlotData[slotID].tblidx = pSkillData->tblidx;
-			res->asQuickSlotData[slotID].byType = QUICK_SLOT_TYPE_SKILL;
+			res->asQuickSlotData[slotID].byType = (pSkillData->bySkill_Class==NTL_SKILL_CLASS_HTB?QUICK_SLOT_TYPE_HTB_SKILL:QUICK_SLOT_TYPE_SKILL);
+			slotID++;
+		}
+		else if (pItemData)
+		{
+			res->asQuickSlotData[slotID].bySlot = i;
+			res->asQuickSlotData[slotID].tblidx = pItemData->tblidx;
+			res->asQuickSlotData[slotID].hItem	= pItemData->tblidx;//Need get correct hItem
+			res->asQuickSlotData[slotID].byType = QUICK_SLOT_TYPE_ITEM;
 			slotID++;
 		}		
 		i++;
