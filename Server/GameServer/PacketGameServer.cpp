@@ -245,7 +245,7 @@ void CClientSession::SendSlotInfo(CNtlPacket * pPacket, CGameServer * app)
 	sGU_QUICK_SLOT_INFO * res = (sGU_QUICK_SLOT_INFO *)packet.GetPacketData();
 
 	res->wOpCode = GU_QUICK_SLOT_INFO;
-	res->byQuickSlotCount = NTL_CHAR_QUICK_SLOT_MAX_COUNT;
+	
 	app->db->fetch();
 	CSkillTable * pSkillTable = app->g_pTableContainer->GetSkillTable();
 
@@ -266,12 +266,13 @@ void CClientSession::SendSlotInfo(CNtlPacket * pPacket, CGameServer * app)
 			res->asQuickSlotData[slotID].tblidx = pSkillData->tblidx;
 			res->asQuickSlotData[slotID].byType = QUICK_SLOT_TYPE_SKILL;
 			slotID++;
-		}
-		packet.AdjustPacketLen(sizeof(sNTLPACKETHEADER)+(2 * sizeof(BYTE)) + (slotID * (sizeof(sQUICK_SLOT_DATA))));
-		g_pApp->Send(this->GetHandle(), &packet);
+		}		
 		i++;
-	}
-	
+	}	
+	res->byQuickSlotCount = slotID;
+
+	packet.AdjustPacketLen(sizeof(sNTLPACKETHEADER)+(2 * sizeof(BYTE)) + (slotID * (sizeof(sQUICK_SLOT_DATA))));
+	g_pApp->Send(this->GetHandle(), &packet);
 }
 //--------------------------------------------------------------------------------------//
 //		Send Avatar Skillinfo
